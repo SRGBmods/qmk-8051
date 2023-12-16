@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
  * Copyright 2018 Jack Humbert <jack.humb@gmail.com>
  * Copyright 2019 Drashna Jaelre (Christopher Courtney) <drashna@live.com>

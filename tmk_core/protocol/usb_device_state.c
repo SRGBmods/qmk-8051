@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
  * Copyright 2021 Andrei Purdea <andrei@purdea.ro>
  *

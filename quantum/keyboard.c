@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2011, 2012, 2013 Jun Wako <wakojun@gmail.com>
 
@@ -295,7 +296,9 @@ __attribute__((weak)) void keyboard_pre_init_kb(void) {
  * FIXME: needs doc
  */
 
+#ifndef __SDCC
 __attribute__((weak)) void keyboard_post_init_user(void) {}
+#endif
 
 /** \brief keyboard_post_init_kb
  *
@@ -501,10 +504,13 @@ void switch_events(uint8_t row, uint8_t col, bool pressed) {
  * internal QMK state machine.
  */
 static inline void generate_tick_event(void) {
+    //print("tik\n");
     static uint16_t last_tick = 0;
     const uint16_t  now       = timer_read();
     if (TIMER_DIFF_16(now, last_tick) != 0) {
-        action_exec(MAKE_TICK_EVENT);
+        //action_exec(MAKE_TICK_EVENT);
+        MAKE_TICK_EVENT;
+        action_exec(dummy_event);
         last_tick = now;
     }
 }
@@ -558,7 +564,9 @@ static bool matrix_task(void) {
                 const bool key_pressed = current_row & col_mask;
 
                 if (process_keypress) {
-                    action_exec(MAKE_KEYEVENT(row, col, key_pressed));
+                    //action_exec(MAKE_KEYEVENT(row, col, key_pressed));
+                    MAKE_KEYEVENT(row, col, key_pressed);
+                    action_exec(dummy_event);
                 }
 
                 switch_events(row, col, key_pressed);
@@ -740,3 +748,19 @@ void keyboard_task(void) {
 
     led_task();
 }
+
+//inline bool IS_NOEVENT(const keyevent_t event) {
+//    return event.type == TICK_EVENT;
+//}
+//inline bool IS_EVENT(const keyevent_t event) {
+//    return event.type != TICK_EVENT;
+//}
+//inline bool IS_KEYEVENT(const keyevent_t event) {
+//    return event.type == KEY_EVENT;
+//}
+//inline bool IS_COMBOEVENT(const keyevent_t event) {
+//    return event.type == COMBO_EVENT;
+//}
+//inline bool IS_ENCODEREVENT(const keyevent_t event) {
+//    return event.type == ENCODER_CW_EVENT || event.type == ENCODER_CCW_EVENT;
+//}

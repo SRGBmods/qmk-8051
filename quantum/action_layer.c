@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 #include <limits.h>
 #include <stdint.h>
 
@@ -308,7 +309,7 @@ uint8_t read_source_layers_cache(keypos_t key) {
  * when the layer is switched after the down event but before the up
  * event as they may get stuck otherwise.
  */
-action_t store_or_get_action(bool pressed, keypos_t key) {
+uint16_t store_or_get_action(bool pressed, keypos_t key) {
 #if !defined(NO_ACTION_LAYER) && !defined(STRICT_LAYER_RELEASE)
     if (disable_action_cache) {
         return layer_switch_get_action(key);
@@ -341,7 +342,7 @@ uint8_t layer_switch_get_layer(keypos_t key) {
     /* check top layer first */
     for (int8_t i = MAX_LAYER - 1; i >= 0; i--) {
         if (layers & ((layer_state_t)1 << i)) {
-            action = action_for_key(i, key);
+            action.code = action_for_key(i, key);
             if (action.code != ACTION_TRANSPARENT) {
                 return i;
             }
@@ -350,6 +351,7 @@ uint8_t layer_switch_get_layer(keypos_t key) {
     /* fall back to layer 0 */
     return 0;
 #else
+    //ac_dprintf("layer_sw_get_layer:default_layer_state %x\n",default_layer_state);
     return get_highest_layer(default_layer_state);
 #endif
 }
@@ -358,8 +360,14 @@ uint8_t layer_switch_get_layer(keypos_t key) {
  *
  * Gets action code based on key position
  */
-action_t layer_switch_get_action(keypos_t key) {
-    return action_for_key(layer_switch_get_layer(key), key);
+uint16_t layer_switch_get_action(keypos_t key) {
+    //return action_for_key(layer_switch_get_layer(key), key);
+    uint8_t layer = layer_switch_get_layer(key);
+    //dprintf("layer_sw_get_action:layer %x\n",layer);
+    uint16_t action;
+    action = action_for_key(layer, key);
+    //dprintf("action %x\n",action);
+    return action;
 }
 
 #ifndef NO_ACTION_LAYER

@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 #include "matrix.h"
 #include "debounce.h"
 #include "wait.h"
@@ -146,6 +147,7 @@ __attribute__((weak)) void matrix_slave_scan_kb(void) {
 __attribute__((weak)) void matrix_slave_scan_user(void) {}
 #endif
 
+#ifndef __SDCC
 __attribute__((weak)) void matrix_init(void) {
 #ifdef SPLIT_KEYBOARD
     thisHand = isLeftHand ? 0 : (ROWS_PER_HAND);
@@ -177,6 +179,7 @@ __attribute__((weak)) uint8_t matrix_scan(void) {
 
     return changed;
 }
+#endif
 
 __attribute__((weak)) bool peek_matrix(uint8_t row_index, uint8_t col_index, bool raw) {
     return 0 != ((raw ? raw_matrix[row_index] : matrix[row_index]) & (MATRIX_ROW_SHIFTER << col_index));

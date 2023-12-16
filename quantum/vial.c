@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /* Copyright 2020 Ilya Zhuravlev
  *
  * This program is free software: you can redistribute it and/or modify
@@ -298,10 +299,11 @@ void vial_keycode_down(uint16_t keycode) {
     if (keycode <= QK_MODS_MAX) {
         register_code16(keycode);
     } else {
-        action_exec((keyevent_t){
+        keyevent_t dummy_event = {
             .type = KEY_EVENT,
-            .key = (keypos_t){.row = VIAL_MATRIX_MAGIC, .col = VIAL_MATRIX_MAGIC}, .pressed = 1, .time = (timer_read() | 1) /* time should not be 0 */
-        });
+            .key = {.row = VIAL_MATRIX_MAGIC, .col = VIAL_MATRIX_MAGIC}, .pressed = 1, .time = (timer_read() | 1) /* time should not be 0 */
+        };
+        action_exec(dummy_event);
     }
 }
 
@@ -311,10 +313,11 @@ void vial_keycode_up(uint16_t keycode) {
     if (keycode <= QK_MODS_MAX) {
         unregister_code16(keycode);
     } else {
-        action_exec((keyevent_t){
+        keyevent_t dummy_event = {
             .type = KEY_EVENT,
-            .key = (keypos_t){.row = VIAL_MATRIX_MAGIC, .col = VIAL_MATRIX_MAGIC}, .pressed = 0, .time = (timer_read() | 1) /* time should not be 0 */
-        });
+            .key = {.row = VIAL_MATRIX_MAGIC, .col = VIAL_MATRIX_MAGIC}, .pressed = 0, .time = (timer_read() | 1) /* time should not be 0 */
+        };
+        action_exec(dummy_event);
     }
 }
 
@@ -559,7 +562,7 @@ bool process_record_vial(uint16_t keycode, keyrecord_t *record) {
 }
 
 #ifdef VIAL_KEY_OVERRIDE_ENABLE
-static bool vial_key_override_disabled = 0;
+__xdata static bool vial_key_override_disabled = 0;
 static key_override_t overrides[VIAL_KEY_OVERRIDE_ENTRIES] = { 0 };
 static key_override_t *override_ptrs[VIAL_KEY_OVERRIDE_ENTRIES + 1] = { 0 };
 const key_override_t **key_overrides = (const key_override_t**)override_ptrs;

@@ -36,6 +36,10 @@
 #    define IS_ARRAY(value) (!__builtin_types_compatible_p(typeof((value)), typeof(&(value)[0])))
 #endif
 
+#ifdef __SDCC
+#   define ARRAY_SIZE(array) ( sizeof((array)) / sizeof((array)[0]) )
+#endif
+
 #if !defined(ARRAY_SIZE)
 /**
  * @brief Computes the number of elements of the given array at compile time.

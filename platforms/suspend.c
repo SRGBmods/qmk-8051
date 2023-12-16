@@ -1,6 +1,7 @@
 // Copyright 2022 QMK
 // SPDX-License-Identifier: GPL-2.0-or-later
 
+#include "sdcc_dummy_macros.h"
 #include "suspend.h"
 #include "matrix.h"
 

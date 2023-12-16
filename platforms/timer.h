@@ -18,9 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#if __has_include_next("_timer.h")
-#    include_next "_timer.h" /* Include the platform's _timer.h */
-#endif
+//#if __has_include_next("_timer.h")
+//#    include_next "_timer.h" /* Include the platform's _timer.h */
+//#endif
+#include "_timer.h"
 
 #include <stdint.h>
 
@@ -34,7 +35,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern "C" {
 #endif
 
+#ifndef __SDCC_mcs51
 extern volatile uint32_t timer_count;
+#else
+extern __data volatile uint32_t timer_count;
+//extern volatile uint32_t timer_count;
+#endif
 
 void     timer_init(void);
 void     timer_clear(void);

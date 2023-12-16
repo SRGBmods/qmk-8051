@@ -119,6 +119,10 @@
             },
             {
                 "type": "string",
+                "pattern": "^PORT\\d_\\d$"
+            },
+            {
+                "type": "string",
                 "pattern": "^LINE_PIN\\d{1,2}$"
             },
             {

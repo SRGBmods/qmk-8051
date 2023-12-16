@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /* Copyright 2016 Jack Humbert
  *
  * This program is free software: you can redistribute it and/or modify

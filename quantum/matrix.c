@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2012-2018 Jun Wako, Jack Humbert, Yiancar
 
@@ -21,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "matrix.h"
 #include "debounce.h"
 #include "atomic_util.h"
+#include "print.h"
 
 #ifdef SPLIT_KEYBOARD
 #    include "split_common/split_util.h"
@@ -321,6 +323,7 @@ __attribute__((weak)) bool transport_master_if_connected(matrix_row_t master_mat
 #endif
 
 uint8_t matrix_scan(void) {
+    //print("sc\n");
     matrix_row_t curr_matrix[MATRIX_ROWS] = {0};
 
 #if defined(DIRECT_PINS) || (DIODE_DIRECTION == COL2ROW)

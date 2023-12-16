@@ -147,11 +147,11 @@ enum via_qmk_audio_value {
 
 // Can be called in an overriding via_init_kb() to test if keyboard level code usage of
 // EEPROM is invalid and use/save defaults.
-bool via_eeprom_is_valid(void);
+__xdata bool via_eeprom_is_valid(void);
 
 // Sets VIA/keyboard level usage of EEPROM to valid/invalid
 // Keyboard level code (eg. via_init_kb()) should not call this
-void via_eeprom_set_valid(bool valid);
+void via_eeprom_set_valid(__xdata bool valid);
 
 // Called by QMK core to initialize dynamic keymaps etc.
 void eeconfig_init_via(void);

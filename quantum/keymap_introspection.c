@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 // Copyright 2022 Nick Brassel (@tzarc)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
@@ -31,15 +32,19 @@ _Static_assert(NUM_KEYMAP_LAYERS_RAW <= MAX_LAYER, "Number of keymap layers exce
 #endif
 
 uint16_t keycode_at_keymap_location_raw(uint8_t layer_num, uint8_t row, uint8_t column) {
+//__attribute__((weak)) uint16_t keycode_at_keymap_location(uint8_t layer_num, uint8_t row, uint8_t column) {
+    //ac_dprintf("layer:%x:row:%x:col:%x\n",layer_num,row,column);
     if (layer_num < NUM_KEYMAP_LAYERS_RAW && row < MATRIX_ROWS && column < MATRIX_COLS) {
         return pgm_read_word(&keymaps[layer_num][row][column]);
     }
     return KC_TRNS;
 }
 
+#ifndef VIA_ENABLE
 __attribute__((weak)) uint16_t keycode_at_keymap_location(uint8_t layer_num, uint8_t row, uint8_t column) {
     return keycode_at_keymap_location_raw(layer_num, row, column);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Encoder mapping
@@ -65,9 +70,11 @@ uint16_t keycode_at_encodermap_location_raw(uint8_t layer_num, uint8_t encoder_i
     return KC_TRNS;
 }
 
+#ifndef VIA_ENABLE
 __attribute__((weak)) uint16_t keycode_at_encodermap_location(uint8_t layer_num, uint8_t encoder_idx, bool clockwise) {
     return keycode_at_encodermap_location_raw(layer_num, encoder_idx, clockwise);
 }
+#endif
 
 #endif // defined(ENCODER_ENABLE) && defined(ENCODER_MAP_ENABLE)
 

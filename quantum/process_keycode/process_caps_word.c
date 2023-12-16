@@ -26,16 +26,16 @@
 static uint8_t held_mods = 0;
 
 static bool handle_shift(uint16_t keycode, keyrecord_t* record) {
-    switch (keycode) {
-        case OSM(MOD_LSFT):
+    //switch (keycode) {
+        if (keycode == OSM(MOD_LSFT)) {
             keycode = KC_LSFT;
-            break;
-        case OSM(MOD_RSFT):
+        }
+        else if(keycode == OSM(MOD_RSFT)) {
             keycode = KC_RSFT;
-            break;
+        }
 
 #    ifndef NO_ACTION_TAPPING
-        case QK_MOD_TAP ... QK_MOD_TAP_MAX:
+        else if (keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) {
             if (record->tap.count == 0) { // Mod-tap key is held.
                 switch (QK_MOD_TAP_GET_MODS(keycode)) {
                     case MOD_LSFT:
@@ -46,8 +46,9 @@ static bool handle_shift(uint16_t keycode, keyrecord_t* record) {
                         break;
                 }
             }
+        }
 #    endif // NO_ACTION_TAPPING
-    }
+    //}
 
     if (keycode == KC_LSFT || keycode == KC_RSFT) {
         const uint8_t mod = MOD_BIT(keycode);
@@ -149,17 +150,17 @@ bool process_caps_word(uint16_t keycode, keyrecord_t* record) {
     }
 
     if (!(mods & ~(MOD_MASK_SHIFT | MOD_BIT(KC_RALT)))) {
-        switch (keycode) {
+        //switch (keycode) {
             // Ignore MO, TO, TG, TT, and OSL layer switch keys.
-            case QK_MOMENTARY ... QK_MOMENTARY_MAX:
-            case QK_TO ... QK_TO_MAX:
-            case QK_TOGGLE_LAYER ... QK_TOGGLE_LAYER_MAX:
-            case QK_LAYER_TAP_TOGGLE ... QK_LAYER_TAP_TOGGLE_MAX:
-            case QK_ONE_SHOT_LAYER ... QK_ONE_SHOT_LAYER_MAX:
-            case QK_TRI_LAYER_LOWER ... QK_TRI_LAYER_UPPER:
+            if ( (keycode >= QK_MOMENTARY && QK_MOMENTARY_MAX) ||
+                 (keycode >= QK_TO               && keycode <= QK_TO_MAX) ||
+                 (keycode >= QK_TOGGLE_LAYER     && keycode <= QK_TOGGLE_LAYER_MAX) ||
+                 (keycode >= QK_LAYER_TAP_TOGGLE && keycode <= QK_LAYER_TAP_TOGGLE_MAX) ||
+                 (keycode >= QK_ONE_SHOT_LAYER   && keycode <= QK_ONE_SHOT_LAYER_MAX) ||
+                 (keycode >= QK_TRI_LAYER_LOWER  && keycode <= QK_TRI_LAYER_UPPER) ||
             // Ignore AltGr.
-            case KC_RALT:
-            case OSM(MOD_RALT):
+                 (keycode == KC_RALT) ||
+                 (keycode == OSM(MOD_RALT)) )
                 return true;
 
 #ifndef NO_ACTION_TAPPING
@@ -169,7 +170,7 @@ bool process_caps_word(uint16_t keycode, keyrecord_t* record) {
             // * For Shift + AltGr (MOD_RSFT | MOD_RALT), pass RSFT(KC_RALT).
             // * AltGr (MOD_RALT) is ignored.
             // * Otherwise stop Caps Word.
-            case QK_MOD_TAP ... QK_MOD_TAP_MAX:
+            else if (keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) {
                 if (record->tap.count == 0) { // Mod-tap key is held.
                     const uint8_t mods = QK_MOD_TAP_GET_MODS(keycode);
                     switch (mods) {
@@ -196,20 +197,22 @@ bool process_caps_word(uint16_t keycode, keyrecord_t* record) {
                 } else {
                     keycode = QK_MOD_TAP_GET_TAP_KEYCODE(keycode);
                 }
-                break;
+                //break;
+            }
 
 #    ifndef NO_ACTION_LAYER
-            case QK_LAYER_TAP ... QK_LAYER_TAP_MAX:
+            else if (keycode >= QK_LAYER_TAP && keycode >= QK_LAYER_TAP_MAX) {
 #    endif // NO_ACTION_LAYER
                 if (record->tap.count == 0) {
                     return true;
                 }
                 keycode = QK_LAYER_TAP_GET_TAP_KEYCODE(keycode);
-                break;
+            //    break;
+            }
 #endif // NO_ACTION_TAPPING
 
 #ifdef SWAP_HANDS_ENABLE
-            case QK_SWAP_HANDS ... QK_SWAP_HANDS_MAX:
+            else if (keycode >= QK_SWAP_HANDS && keycode <= QK_SWAP_HANDS_MAX) {
                 // Note: IS_SWAP_HANDS_KEYCODE() actually tests for the special action keycodes like SH_TOGG, SH_TT, ...,
                 // which currently overlap the SH_T(kc) range.
                 if (IS_SWAP_HANDS_KEYCODE(keycode)
@@ -220,9 +223,10 @@ bool process_caps_word(uint16_t keycode, keyrecord_t* record) {
                     return true;
                 }
                 keycode = QK_SWAP_HANDS_GET_TAP_KEYCODE(keycode);
-                break;
+            //    break;
+            }
 #endif // SWAP_HANDS_ENABLE
-        }
+        //}
 
 #ifdef AUTO_SHIFT_ENABLE
         del_weak_mods(get_autoshift_state() ? ~MOD_BIT(KC_LSFT) : 0xff);
@@ -248,21 +252,23 @@ bool process_caps_word(uint16_t keycode, keyrecord_t* record) {
 }
 
 __attribute__((weak)) bool caps_word_press_user(uint16_t keycode) {
-    switch (keycode) {
+    //switch (keycode) {
         // Keycodes that continue Caps Word, with shift applied.
-        case KC_A ... KC_Z:
-        case KC_MINS:
+        if ((keycode >= KC_A && keycode <= KC_Z) ||
+            keycode == KC_MINS) {
             add_weak_mods(MOD_BIT(KC_LSFT)); // Apply shift to next key.
             return true;
+        }
 
         // Keycodes that continue Caps Word, without shifting.
-        case KC_1 ... KC_0:
-        case KC_BSPC:
-        case KC_DEL:
-        case KC_UNDS:
+        if ((keycode >= KC_1 && keycode <= KC_0) ||
+            (keycode == KC_BSPC) ||
+            (keycode == KC_DEL) ||
+            (keycode == KC_UNDS) ) {
             return true;
+        }
 
-        default:
+        else
             return false; // Deactivate Caps Word.
-    }
+    //}
 }

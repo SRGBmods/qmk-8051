@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2012,2013 Jun Wako <wakojun@gmail.com>
 
@@ -59,8 +60,8 @@ typedef struct {
 void action_exec(keyevent_t event);
 
 /* action for key */
-action_t action_for_key(uint8_t layer, keypos_t key);
-action_t action_for_keycode(uint16_t keycode);
+uint16_t action_for_key(uint8_t layer, keypos_t key);
+uint16_t action_for_keycode(uint16_t keycode);
 
 /* keyboard-specific key event (pre)processing */
 bool process_record_quantum(keyrecord_t *record);
@@ -148,6 +149,7 @@ void process_record_tap_hint(keyrecord_t *record);
 void debug_event(keyevent_t event);
 void debug_record(keyrecord_t record);
 void debug_action(action_t action);
+void debug_rp(void);
 
 #ifdef __cplusplus
 }

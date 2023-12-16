@@ -68,7 +68,11 @@ uint8_t host_keyboard_leds(void) {
 }
 
 led_t host_keyboard_led_state(void) {
-    return (led_t)host_keyboard_leds();
+    //return (led_t)host_keyboard_leds();
+    uint8_t usb_led = host_keyboard_leds();
+    uint8_t *usb_led_p2 = &usb_led;
+    led_t *usb_led_p = (led_t*)usb_led_p2;
+    return *usb_led_p;
 }
 
 /* send report */
@@ -156,6 +160,7 @@ void host_consumer_send(uint16_t usage) {
         .report_id = REPORT_ID_CONSUMER,
         .usage     = usage,
     };
+    //printf("csmr rpt %x:%x\n",report.report_id, report.usage);
     (*driver->send_extra)(&report);
 }
 
@@ -212,7 +217,9 @@ void host_joystick_send(joystick_t *joystick) {
 }
 #endif
 
+#ifndef __SDCC
 __attribute__((weak)) void send_joystick(report_joystick_t *report) {}
+#endif
 
 #ifdef DIGITIZER_ENABLE
 void host_digitizer_send(digitizer_t *digitizer) {
@@ -231,7 +238,9 @@ void host_digitizer_send(digitizer_t *digitizer) {
 }
 #endif
 
+#ifndef __SDCC
 __attribute__((weak)) void send_digitizer(report_digitizer_t *report) {}
+#endif
 
 #ifdef PROGRAMMABLE_BUTTON_ENABLE
 void host_programmable_button_send(uint32_t data) {
@@ -244,7 +253,9 @@ void host_programmable_button_send(uint32_t data) {
 }
 #endif
 
+#ifndef __SDCC
 __attribute__((weak)) void send_programmable_button(report_programmable_button_t *report) {}
+#endif
 
 uint16_t host_last_system_usage(void) {
     return last_system_usage;

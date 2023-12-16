@@ -1,3 +1,6 @@
+#include "sdcc_dummy_macros.h"
+//#include "ch555.h"
+//#include "wait.h"
 /* Copyright 2021 QMK
  *
  * This program is free software: you can redistribute it and/or modify
@@ -55,6 +58,8 @@ int main(void) {
 
     protocol_init();
 
+    //wait_ms(1000);
+    //printf("SP %x\n",SP);
     /* Main loop */
     while (true) {
         protocol_task();

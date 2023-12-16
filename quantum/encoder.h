@@ -44,7 +44,9 @@ void encoder_update_raw(uint8_t* slave_state);
 
 #else // SPLIT_KEYBOARD
 
+#    ifndef NUM_ENCODERS
 #    define NUM_ENCODERS ARRAY_SIZE(((pin_t[])ENCODERS_PAD_A))
+#    endif
 #    define NUM_ENCODERS_LEFT NUM_ENCODERS
 #    define NUM_ENCODERS_RIGHT 0
 

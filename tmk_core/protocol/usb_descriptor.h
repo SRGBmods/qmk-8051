@@ -202,6 +202,8 @@ enum usb_interfaces {
 /*
  * Endpoint numbers
  */
+#ifndef QMK_MCU_CH555
+
 enum usb_endpoints {
     __unused_epnum__ = NEXT_EPNUM, // Endpoint numbering starts at 1
 
@@ -283,12 +285,50 @@ enum usb_endpoints {
 #endif
 };
 
+#else //CH555
+
+
+#define    KEYBOARD_IN_EPNUM   1
+//#    define KEYBOARD_IN_EPNUM SHARED_IN_EPNUM
+
+//#define    MOUSE_IN_EPNUM   1
+//#    define MOUSE_IN_EPNUM SHARED_IN_EPNUM
+
+#define    RAW_IN_EPNUM 2
+//#        define RAW_OUT_EPNUM RAW_IN_EPNUM
+#define    RAW_OUT_EPNUM 3
+
+#define    SHARED_IN_EPNUM 5
+
+//    CONSOLE_IN_EPNUM ,
+//#define CONSOLE_OUT_EPNUM CONSOLE_IN_EPNUM
+
+//    MIDI_STREAM_IN_EPNUM ,
+//#        define MIDI_STREAM_OUT_EPNUM MIDI_STREAM_IN_EPNUM
+//    MIDI_STREAM_OUT_EPNUM ,
+
+//    CDC_NOTIFICATION_EPNUM ,
+//    CDC_IN_EPNUM           ,
+//#        define CDC_OUT_EPNUM CDC_IN_EPNUM
+//    CDC_OUT_EPNUM         ,
+
+//    JOYSTICK_IN_EPNUM ,
+//#        define JOYSTICK_IN_EPNUM SHARED_IN_EPNUM
+
+//    DIGITIZER_IN_EPNUM ,
+//#        define DIGITIZER_IN_EPNUM SHARED_IN_EPNUM
+#endif //CH555
+
 #ifdef PROTOCOL_LUFA
 // LUFA tells us total endpoints including control
 #    define MAX_ENDPOINTS (ENDPOINT_TOTAL_ENDPOINTS - 1)
 #elif defined(PROTOCOL_CHIBIOS)
 // ChibiOS gives us number of available user endpoints, not control
 #    define MAX_ENDPOINTS USB_MAX_ENDPOINTS
+#elif defined(PROTOCOL_CH554)
+#    define MAX_ENDPOINTS 3
+#elif defined(PROTOCOL_CH555)
+#    define MAX_ENDPOINTS 6
 #endif
 
 // TODO - ARM_ATSAM
@@ -307,5 +347,45 @@ enum usb_endpoints {
 #define CDC_EPSIZE 16
 #define JOYSTICK_EPSIZE 8
 #define DIGITIZER_EPSIZE 8
+
+
+#ifndef KEYBOARD_SHARED_EP
+extern const uint8_t KeyboardReport_size;
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM KeyboardReport[];
+#endif
+#if defined(MOUSE_ENABLE) && !defined(MOUSE_SHARED_EP)
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM MouseReport[];
+extern const uint8_t MouseReport_size;
+#endif
+#if defined(JOYSTICK_ENABLE) && !defined(JOYSTICK_SHARED_EP)
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[];
+extern const uint8_t JoystickReport_size;
+#endif
+#if defined(DIGITIZER_ENABLE) && !defined(DIGITIZER_SHARED_EP)
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM DigitizerReport[];
+extern const uint8_t DigitizerReport_size;
+#endif
+#ifdef SHARED_EP_ENABLE
+extern const uint8_t SharedReport_size;
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[];
+#endif
+#ifdef RAW_ENABLE
+extern const uint8_t RawReport_size;
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM RawReport[];
+#endif
+
+#ifdef CONSOLE_ENABLE
+extern const USB_Descriptor_HIDReport_Datatype_t PROGMEM ConsoleReport[];
+extern const uint8_t ConsoleReport_size;
+#endif
+
+extern const USB_Descriptor_Device_t PROGMEM DeviceDescriptor;
+extern const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor;
+extern const USB_Descriptor_String_t PROGMEM LanguageString;
+extern const USB_Descriptor_String_t PROGMEM ManufacturerString;
+extern const USB_Descriptor_String_t PROGMEM ProductString;
+#if defined(SERIAL_NUMBER)
+extern const USB_Descriptor_String_t PROGMEM SerialNumberString;
+#endif
 
 uint16_t get_usb_descriptor(const uint16_t wValue, const uint16_t wIndex, const uint16_t wLength, const void** const DescriptorAddress);

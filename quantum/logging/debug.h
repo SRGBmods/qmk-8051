@@ -67,7 +67,7 @@ extern debug_config_t debug_config;
         do {                                               \
             if (debug_enable) xprintf(fmt, ##__VA_ARGS__); \
         } while (0)
-#    define dmsg(s) dprintf("%s at %d: %s\n", __FILE__, __LINE__, s)
+#    define dmsg(s) dprintf("%s at %d:func %s: %s\n", __FILE__, __LINE__, __func__, s)
 
 /* Deprecated. DO NOT USE these anymore, use dprintf instead. */
 #    define debug(s)                    \

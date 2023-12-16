@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
  * Copyright 2020 Richard Sutherland (rich@brickbots.com)
  *

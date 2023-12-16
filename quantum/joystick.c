@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /* Copyright 2022
  *
  * This program is free software: you can redistribute it and/or modify

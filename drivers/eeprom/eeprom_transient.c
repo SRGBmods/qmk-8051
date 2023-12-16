@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "sdcc_dummy_macros.h"
 #include <stdint.h>
 #include <string.h>
 

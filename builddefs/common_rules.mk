@@ -31,7 +31,11 @@ FORMAT = ihex
 OPT ?= s
 
 # Compiler flag to set the C and C++ language standard level
-CSTANDARD = -std=gnu11
+ifneq ($(PLATFORM),MCS51)
+    CSTANDARD = -std=gnu11
+else
+    CSTANDARD = --std-sdcc11
+endif
 CXXSTANDARD = -std=gnu++14
 
 # Speed up recompilations by opt-in usage of ccache
@@ -67,16 +71,20 @@ ifeq ("$(shell echo "int main(){}" | $(CC) -fdiagnostics-color -x c - -o /dev/nu
 	CFLAGS+= -fdiagnostics-color
 endif
 endif
+ifneq ($(PLATFORM),MCS51)
 CFLAGS += -Wall
 CFLAGS += -Wstrict-prototypes
 ifneq ($(strip $(ALLOW_WARNINGS)), yes)
     CFLAGS += -Werror
 endif
+endif
 CFLAGS += $(CSTANDARD)
 
 # This fixes lots of keyboards linking errors but SHOULDN'T BE A FINAL SOLUTION
 # Fixing of multiple variable definitions must be made.
+ifneq ($(PLATFORM),MCS51)
 CFLAGS += -fcommon
+endif
 
 #---------------- C++ Compiler Options ----------------
 
@@ -157,7 +165,11 @@ UF2_FAMILY ?= 0x0
 
 # Compiler flags to generate dependency files.
 #GENDEPFLAGS = -MMD -MP -MF .dep/$(@F).d
+ifneq ($(PLATFORM),MCS51)
 GENDEPFLAGS = -MMD -MP -MF $(patsubst %.o,%.td,$@)
+#else 
+#GENDEPFLAGS = -MM > $(patsubst %.o,%.d,$@)
+endif
 
 
 # Combine all necessary flags and optional flags.
@@ -172,7 +184,11 @@ $(patsubst %.a,%.o,$1): NOLTO_CFLAGS += -fno-lto
 endef
 $(foreach LOBJ, $(NO_LTO_OBJ), $(eval $(call NO_LTO,$(LOBJ))))
 
+ifneq ($(PLATFORM),MCS51)
 MOVE_DEP = mv -f $(patsubst %.o,%.td,$@) $(patsubst %.o,%.d,$@)
+else
+MOVE_DEP = mv -f $@ $(patsubst %.o,%.rel,$@)
+endif
 
 # For a ChibiOS build, ensure that the board files have the hook overrides injected
 define BOARDSRC_INJECT_HOOKS
@@ -259,6 +275,8 @@ gccversion :
 		python3 util/vial_generate_vfw.py $(TARGET).bin $(TARGET).vfw $(CONFIG_H) ;\
 	fi
 
+SED_OBJ_TXT = sed -i 's/.o/.rel/' $(MASTER_OUTPUT)/obj.txt
+
 BEGIN = gccversion sizebefore
 
 # Link: create ELF output file from object files.
@@ -274,7 +292,11 @@ BEGIN = gccversion sizebefore
 define GEN_OBJRULE
 $1_INCFLAGS := $$(patsubst %,-I%,$$($1_INC))
 ifdef $1_CONFIG
+ifneq ($(PLATFORM),MCS51)
 $1_CONFIG_FLAGS += $$(patsubst %,-include %,$$($1_CONFIG))
+else
+$1_CONFIG_FLAGS += -I$(INTERMEDIATE_OUTPUT)/src -I$(USER_PATH)
+endif
 endif
 $1_CFLAGS = $$(ALL_CFLAGS) $$($1_DEFS) $$($1_INCFLAGS) $$($1_CONFIG_FLAGS) $$(NOLTO_CFLAGS)
 $1_CXXFLAGS = $$(ALL_CXXFLAGS) $$($1_DEFS) $$($1_INCFLAGS) $$($1_CONFIG_FLAGS) $$(NOLTO_CFLAGS)
@@ -292,7 +314,7 @@ $1/%.o : %.c $1/%.d $1/cflags.txt $1/compiler.txt | $(BEGIN)
 	$$(if $$(filter $$(notdir $$(VERBOSE_C_INCLUDE)),$$(notdir $$<)),$$(eval CC_EXEC += -H))
     endif
 	$$(eval CMD := $$(CC_EXEC) -c $$($1_CFLAGS) $$(INIT_HOOK_CFLAGS) $$(GENDEPFLAGS) $$< -o $$@ && $$(MOVE_DEP))
-	@$$(BUILD_CMD)
+	$$(BUILD_CMD)
     ifneq ($$(DUMP_C_MACROS),)
 	$$(eval CMD := $$(CC) -E -dM $$($1_CFLAGS) $$(INIT_HOOK_CFLAGS) $$(GENDEPFLAGS) $$<)
 	@$$(if $$(filter $$(notdir $$(DUMP_C_MACROS)),$$(notdir $$<)),$$(BUILD_CMD))
@@ -343,6 +365,7 @@ endef
 .PRECIOUS: $(MASTER_OUTPUT)/obj.txt
 $(MASTER_OUTPUT)/obj.txt: $(MASTER_OUTPUT)/force
 	echo '$(OBJ)' | cmp -s - $@ || echo '$(OBJ)' > $@
+	$(SED) -i 's/\.o/\.rel/g' $@
 
 .PRECIOUS: $(MASTER_OUTPUT)/ldflags.txt
 $(MASTER_OUTPUT)/ldflags.txt: $(MASTER_OUTPUT)/force

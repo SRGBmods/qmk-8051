@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2012,2013 Jun Wako <wakojun@gmail.com>
 
@@ -94,7 +95,9 @@ void action_exec(keyevent_t event) {
     }
 #endif
 
-    keyrecord_t record = {.event = event};
+    //keyrecord_t record = {.event = event};
+    keyrecord_t record;
+    record.event = event;
 
 #ifndef NO_ACTION_ONESHOT
     if (keymap_config.oneshot_enable) {
@@ -228,11 +231,13 @@ void process_record_nocache(keyrecord_t *record) {
 }
 #endif
 
+#ifndef __SDCC
 __attribute__((weak)) bool process_record_quantum(keyrecord_t *record) {
     return true;
 }
 
 __attribute__((weak)) void post_process_record_quantum(keyrecord_t *record) {}
+#endif
 
 #ifndef NO_ACTION_TAPPING
 /** \brief Allows for handling tap-hold actions immediately instead of waiting for TAPPING_TERM or another keypress.
@@ -244,7 +249,8 @@ void process_record_tap_hint(keyrecord_t *record) {
         return;
     }
 
-    action_t action = layer_switch_get_action(record->event.key);
+    action_t action;
+    action.code = layer_switch_get_action(record->event.key);
 
     switch (action.kind.id) {
 #    ifdef SWAP_HANDS_ENABLE
@@ -286,6 +292,7 @@ void process_record(keyrecord_t *record) {
 }
 
 void process_record_handler(keyrecord_t *record) {
+    //dprint("process_record_handler");
 #if defined(COMBO_ENABLE) || defined(REPEAT_KEY_ENABLE)
     action_t action;
     if (record->keycode) {
@@ -294,7 +301,8 @@ void process_record_handler(keyrecord_t *record) {
         action = store_or_get_action(record->event.pressed, record->event.key);
     }
 #else
-    action_t action = store_or_get_action(record->event.pressed, record->event.key);
+    action_t action;
+    action.code = store_or_get_action(record->event.pressed, record->event.key);
 #endif
     ac_dprintf("ACTION: ");
     debug_action(action);
@@ -305,6 +313,7 @@ void process_record_handler(keyrecord_t *record) {
     default_layer_debug();
 #endif
     ac_dprintf("\n");
+    //ac_dprintf("raw action:%x\n",*((uint16_t *)&action));
 
     process_action(record, action);
 }
@@ -364,9 +373,11 @@ void register_mouse(uint8_t mouse_keycode, bool pressed) {
  * FIXME: Needs documentation.
  */
 void process_action(keyrecord_t *record, action_t action) {
-    keyevent_t event = record->event;
+    keyevent_t event;
+    event = record->event;
 #ifndef NO_ACTION_TAPPING
-    uint8_t tap_count = record->tap.count;
+    uint8_t tap_count;
+    tap_count = record->tap.count;
 #endif
 
 #ifndef NO_ACTION_ONESHOT
@@ -1121,7 +1132,8 @@ bool is_tap_record(keyrecord_t *record) {
         action = layer_switch_get_action(record->event.key);
     }
 #else
-    action_t action = layer_switch_get_action(record->event.key);
+    action_t action;
+    action.code = layer_switch_get_action(record->event.key);
 #endif
     return is_tap_action(action);
 }
@@ -1136,18 +1148,33 @@ bool is_tap_action(action_t action) {
         case ACT_RMODS_TAP:
         case ACT_LAYER_TAP:
         case ACT_LAYER_TAP_EXT:
-            switch (action.layer_tap.code) {
-                case KC_NO ... KC_RIGHT_GUI:
-                case OP_TAP_TOGGLE:
-                case OP_ONESHOT:
+            //switch (action.layer_tap.code) {
+            //    case KC_NO ... KC_RIGHT_GUI:
+            //    case OP_TAP_TOGGLE:
+            //    case OP_ONESHOT:
+            //        return true;
+            //}
+            {
+                uint8_t code = action.layer_tap.code;
+                if ((code >= KC_NO && code <= KC_RIGHT_GUI) || 
+                code == OP_TAP_TOGGLE || 
+                code == OP_ONESHOT) {
                     return true;
+                }
             }
             return false;
         case ACT_SWAP_HANDS:
-            switch (action.swap.code) {
-                case KC_NO ... KC_RIGHT_GUI:
-                case OP_SH_TAP_TOGGLE:
+            //switch (action.swap.code) {
+            //    case KC_NO ... KC_RIGHT_GUI:
+            //    case OP_SH_TAP_TOGGLE:
+            //        return true;
+            //}
+            {
+                uint8_t code = action.swap.code;
+                if ((code >= KC_NO && code <= KC_RIGHT_GUI) || 
+                     code == OP_SH_TAP_TOGGLE) {
                     return true;
+                }
             }
             return false;
     }
@@ -1159,7 +1186,7 @@ bool is_tap_action(action_t action) {
  * FIXME: Needs documentation.
  */
 void debug_event(keyevent_t event) {
-    ac_dprintf("%04X%c(%u)", (event.key.row << 8 | event.key.col), (event.pressed ? 'd' : 'u'), event.time);
+    ac_dprintf("%x:%04X%c(%u)\n", event.type, (event.key.row << 8 | event.key.col), (event.pressed ? 'd' : 'u'), event.time);
 }
 /** \brief Debug print (FIXME: Needs better description)
  *
@@ -1216,4 +1243,15 @@ void debug_action(action_t action) {
             break;
     }
     ac_dprintf("[%X:%02X]", action.kind.param >> 8, action.kind.param & 0xff);
+}
+
+
+void debug_rp(void) {
+    if (debug_keyboard) {
+        //dprint("keyboard_report: ");
+        for (uint8_t i = 0; i < KEYBOARD_REPORT_SIZE; i++) {
+            dprintf("%02X ", keyboard_report->raw[i]);
+        }
+        dprint("\n");
+    }
 }

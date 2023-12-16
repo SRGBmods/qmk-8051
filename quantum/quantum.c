@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /* Copyright 2016-2017 Jack Humbert
  *
  * This program is free software: you can redistribute it and/or modify
@@ -89,12 +90,14 @@ float default_layer_songs[][16][2] = DEFAULT_LAYER_SONGS;
 #endif
 
 uint8_t extract_mod_bits(uint16_t code) {
-    switch (code) {
-        case QK_MODS ... QK_MODS_MAX:
-            break;
-        default:
-            return 0;
-    }
+    //switch (code) {
+    //    case QK_MODS ... QK_MODS_MAX:
+    //        break;
+    //    default:
+    //        return 0;
+    //}
+    if (code >= QK_MODS && code <= QK_MODS_MAX) ;
+    else return 0;
 
     uint8_t mods_to_send = 0;
 
@@ -247,6 +250,9 @@ uint16_t get_event_keycode(keyevent_t event, bool update_layer_cache) {
         return keymap_key_to_keycode(layer, event.key);
     } else
 #endif
+        //uint8_t layer = layer_switch_get_layer(event.key);
+        //dprintf("get_event_keycode:layer %x\n",layer);
+        //return keymap_key_to_keycode(layer, event.key);
         return keymap_key_to_keycode(layer_switch_get_layer(event.key), event.key);
 }
 
@@ -424,8 +430,8 @@ bool process_record_quantum_helper(uint16_t keycode, keyrecord_t *record) {
                 } else {
                     print("DEBUG: disabled.\n");
                 }
-#endif
                 return false;
+#endif
             case QK_CLEAR_EEPROM:
 #ifdef NO_RESET
                 eeconfig_init();

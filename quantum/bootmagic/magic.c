@@ -27,7 +27,9 @@
 
 keymap_config_t keymap_config;
 
+#ifndef VIA_ENABLE
 __attribute__((weak)) void bootmagic(void) {}
+#endif
 
 /** \brief Magic
  *

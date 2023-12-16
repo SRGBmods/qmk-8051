@@ -147,7 +147,11 @@ __attribute__((weak)) void led_set(uint8_t usb_led) {
 #endif
 
     led_set_user(usb_led);
-    led_update_kb((led_t)usb_led);
+    //led_update_kb((led_t)usb_led);
+
+    led_t usb_led_casted;
+    usb_led_casted.raw = usb_led;
+    led_update_kb(usb_led_casted);
 }
 
 /** \brief Trigger behaviour on transition to suspend

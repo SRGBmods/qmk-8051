@@ -1,7 +1,7 @@
 PRINTF_PATH = $(LIB_PATH)/printf/src
 
 VPATH += $(PRINTF_PATH) $(PRINTF_PATH)/printf
-SRC += printf.c
+#SRC += printf.c
 QUANTUM_SRC +=$(QUANTUM_DIR)/logging/print.c
 
 OPT_DEFS += -DPRINTF_SUPPORT_DECIMAL_SPECIFIERS=0

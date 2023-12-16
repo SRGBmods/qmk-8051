@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2011 Jun Wako <wakojun@gmail.com>
 

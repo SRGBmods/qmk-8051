@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /* Copyright 2021 QMK
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,11 +19,13 @@
 #include "gpio.h"
 #include "wait.h"
 
+#ifndef __SDCC
 __attribute__((weak)) void usb_disconnect(void) {}
 
 __attribute__((weak)) bool usb_connected_state(void) {
     return true;
 }
+#endif
 
 __attribute__((weak)) bool usb_vbus_state(void) {
 #ifdef USB_VBUS_PIN

@@ -260,6 +260,21 @@ else
       # arm_atsam EEPROM
       OPT_DEFS += -DEEPROM_SAMD
       SRC += eeprom_samd.c
+    else ifeq ($(PLATFORM),MCS51)
+        # Wear-leveling EEPROM implementation, backed by MCU flash
+        OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_WEAR_LEVELING
+       #WEAR_LEVELING_DRIVER ?= ch555_embedded_flash
+        OPT_DEFS += -DWEAR_LEVELING_ENABLE
+        COMMON_VPATH += $(DRIVER_PATH)/wear_leveling
+        SRC += eeprom_driver.c eeprom_wear_leveling.c
+
+        COMMON_VPATH += $(QUANTUM_DIR)/wear_leveling
+        SRC += wear_leveling.c
+
+        FNV_ENABLE := yes
+
+       #SRC += $(LIB_PATH)/ch555/wear_leveling_efl.c
+        SRC += eeprom.c
     else ifeq ($(PLATFORM),TEST)
       # Test harness "EEPROM"
       OPT_DEFS += -DEEPROM_TEST_HARNESS
@@ -268,7 +283,7 @@ else
   endif
 endif
 
-VALID_WEAR_LEVELING_DRIVER_TYPES := custom embedded_flash spi_flash rp2040_flash legacy
+VALID_WEAR_LEVELING_DRIVER_TYPES := custom embedded_flash spi_flash rp2040_flash legacy ch555_embedded_flash
 WEAR_LEVELING_DRIVER ?= none
 ifneq ($(strip $(WEAR_LEVELING_DRIVER)),none)
   ifeq ($(filter $(WEAR_LEVELING_DRIVER),$(VALID_WEAR_LEVELING_DRIVER_TYPES)),)
@@ -296,6 +311,8 @@ ifneq ($(strip $(WEAR_LEVELING_DRIVER)),none)
       COMMON_VPATH += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_DIR)/flash
       SRC += legacy_flash_ops.c wear_leveling_legacy.c
       POST_CONFIG_H += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_DIR)/wear_leveling/wear_leveling_legacy_config.h
+    else ifeq ($(strip $(WEAR_LEVELING_DRIVER)), ch555_embedded_flash)
+      SRC += wear_leveling_efl.c
     endif
   endif
 endif

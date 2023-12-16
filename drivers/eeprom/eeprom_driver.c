@@ -50,7 +50,8 @@ void eeprom_write_dword(uint32_t *addr, uint32_t value) {
 }
 
 void eeprom_update_block(const void *buf, void *addr, size_t len) {
-    uint8_t read_buf[len];
+    //uint8_t read_buf[len];
+    uint8_t *read_buf = (uint8_t *) malloc(len*sizeof(uint8_t));
     eeprom_read_block(read_buf, addr, len);
     if (memcmp(buf, read_buf, len) != 0) {
         eeprom_write_block(buf, addr, len);

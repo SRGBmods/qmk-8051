@@ -86,8 +86,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define EECONFIG_KEYMAP_SWAP_BACKSLASH_BACKSPACE (1 << 6)
 #define EECONFIG_KEYMAP_NKRO (1 << 7)
 
-bool eeconfig_is_enabled(void);
-bool eeconfig_is_disabled(void);
+__xdata bool eeconfig_is_enabled(void);
+__xdata bool eeconfig_is_disabled(void);
 
 void eeconfig_init(void);
 void eeconfig_init_quantum(void);
@@ -127,18 +127,18 @@ uint32_t eeconfig_read_haptic(void);
 void     eeconfig_update_haptic(uint32_t val);
 #endif
 
-bool eeconfig_read_handedness(void);
-void eeconfig_update_handedness(bool val);
+__xdata bool eeconfig_read_handedness(void);
+void eeconfig_update_handedness(__xdata bool val);
 
 #if (EECONFIG_KB_DATA_SIZE) > 0
-bool eeconfig_is_kb_datablock_valid(void);
+__xdata bool eeconfig_is_kb_datablock_valid(void);
 void eeconfig_read_kb_datablock(void *data);
 void eeconfig_update_kb_datablock(const void *data);
 void eeconfig_init_kb_datablock(void);
 #endif // (EECONFIG_KB_DATA_SIZE) > 0
 
 #if (EECONFIG_USER_DATA_SIZE) > 0
-bool eeconfig_is_user_datablock_valid(void);
+__xdata bool eeconfig_is_user_datablock_valid(void);
 void eeconfig_read_user_datablock(void *data);
 void eeconfig_update_user_datablock(const void *data);
 void eeconfig_init_user_datablock(void);
@@ -150,7 +150,7 @@ void eeconfig_init_user_datablock(void);
 #define EECONFIG_DEBOUNCE_HELPER_CHECKED(name, offset, config)          \
     static uint8_t dirty_##name = false;                                \
                                                                         \
-    bool eeconfig_check_valid_##name(void);                             \
+    __xdata bool eeconfig_check_valid_##name(void);                             \
     void eeconfig_post_flush_##name(void);                              \
                                                                         \
     static inline void eeconfig_init_##name(void) {                     \
@@ -160,7 +160,7 @@ void eeconfig_init_user_datablock(void);
             dirty_##name = false;                                       \
         }                                                               \
     }                                                                   \
-    static inline void eeconfig_flush_##name(bool force) {              \
+    static inline void eeconfig_flush_##name(__xdata bool force) {              \
         if (force || dirty_##name) {                                    \
             eeprom_update_block(&config, offset, sizeof(config));       \
             eeconfig_post_flush_##name();                               \
@@ -174,7 +174,7 @@ void eeconfig_init_user_datablock(void);
             flush_timer = timer_read();                                 \
         }                                                               \
     }                                                                   \
-    static inline void eeconfig_flag_##name(bool v) {                   \
+    static inline void eeconfig_flag_##name(__xdata bool v) {                   \
         dirty_##name |= v;                                              \
     }                                                                   \
     static inline void eeconfig_write_##name(typeof(config) *conf) {    \
@@ -187,7 +187,7 @@ void eeconfig_init_user_datablock(void);
 #define EECONFIG_DEBOUNCE_HELPER(name, offset, config)     \
     EECONFIG_DEBOUNCE_HELPER_CHECKED(name, offset, config) \
                                                            \
-    bool eeconfig_check_valid_##name(void) {               \
+    __xdata bool eeconfig_check_valid_##name(void) {               \
         return true;                                       \
     }                                                      \
     void eeconfig_post_flush_##name(void) {}

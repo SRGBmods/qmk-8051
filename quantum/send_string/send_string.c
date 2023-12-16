@@ -14,6 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "sdcc_dummy_macros.h"
 #include "send_string.h"
 
 #include <ctype.h>
@@ -240,14 +241,19 @@ void send_byte(uint8_t number) {
 }
 
 void send_nibble(uint8_t number) {
-    switch (number & 0xF) {
-        case 0 ... 9:
+    //switch (number & 0xF) {
+    //    case 0 ... 9:
+    //        send_char(number + '0');
+    //        break;
+    //    case 10 ... 15:
+    //        send_char(number - 10 + 'a');
+    //        break;
+    //}
+    uint8_t number_4b = number & 0xf;
+    if (number_4b < 10)
             send_char(number + '0');
-            break;
-        case 10 ... 15:
+    else if (number_4b >= 10 && number_4b <= 15)
             send_char(number - 10 + 'a');
-            break;
-    }
 }
 
 void tap_random_base64(void) {
@@ -256,26 +262,21 @@ void tap_random_base64(void) {
 #else
     uint8_t key = rand() % 64;
 #endif
-    switch (key) {
-        case 0 ... 25:
+    //switch (key) {
+        //if (key >= 0 && key <= 25)
+        if      (key <= 25) // the >= 0 check seems stupid
             send_char(key + 'A');
-            break;
-        case 26 ... 51:
+        else if (key >= 26 && key <= 51)
             send_char(key - 26 + 'a');
-            break;
-        case 52:
+        else if (key == 52)
             send_char('0');
-            break;
-        case 53 ... 61:
+        else if (key >= 53 && key <= 61)
             send_char(key - 53 + '1');
-            break;
-        case 62:
+        else if (key == 62)
             send_char('+');
-            break;
-        case 63:
+        else if (key == 63)
             send_char('/');
-            break;
-    }
+    //}
 }
 
 #if defined(__AVR__)

@@ -64,12 +64,18 @@ static inline bool IS_COMBOEVENT(const keyevent_t event) {
 static inline bool IS_ENCODEREVENT(const keyevent_t event) {
     return event.type == ENCODER_CW_EVENT || event.type == ENCODER_CCW_EVENT;
 }
+//inline bool IS_NOEVENT(const keyevent_t event) ;
+//inline bool IS_EVENT(const keyevent_t event) ;
+//inline bool IS_KEYEVENT(const keyevent_t event) ;
+//inline bool IS_COMBOEVENT(const keyevent_t event) ;
+//inline bool IS_ENCODEREVENT(const keyevent_t event) ;
 
 /* Common keypos_t object factory */
 #define MAKE_KEYPOS(row_num, col_num) ((keypos_t){.row = (row_num), .col = (col_num)})
 
 /* Common keyevent_t object factory */
-#define MAKE_EVENT(row_num, col_num, press, event_type) ((keyevent_t){.key = MAKE_KEYPOS((row_num), (col_num)), .pressed = (press), .time = timer_read(), .type = (event_type)})
+//#define MAKE_EVENT(row_num, col_num, press, event_type) ((keyevent_t){.key = MAKE_KEYPOS((row_num), (col_num)), .pressed = (press), .time = timer_read(), .type = (event_type)})
+#define MAKE_EVENT(row_num, col_num, press, event_type) keyevent_t dummy_event = {.key={.col=col_num,.row=row_num}, .time=timer_read(), .type=event_type, .pressed=press}
 
 /**
  * @brief Constructs a key event for a pressed or released key.

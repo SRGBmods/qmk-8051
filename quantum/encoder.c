@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
  * Copyright 2018 Jack Humbert <jack.humb@gmail.com>
  *
@@ -174,12 +175,26 @@ void encoder_init(void) {
 #ifdef ENCODER_MAP_ENABLE
 static void encoder_exec_mapping(uint8_t index, bool clockwise) {
     // The delays below cater for Windows and its wonderful requirements.
-    action_exec(clockwise ? MAKE_ENCODER_CW_EVENT(index, true) : MAKE_ENCODER_CCW_EVENT(index, true));
+    //action_exec(clockwise ? MAKE_ENCODER_CW_EVENT(index, true) : MAKE_ENCODER_CCW_EVENT(index, true));
+    if (clockwise) {
+        MAKE_ENCODER_CW_EVENT(index, true);
+        action_exec(dummy_event);
+    } else {
+        MAKE_ENCODER_CCW_EVENT(index, true);
+        action_exec(dummy_event);
+    }
 #    if ENCODER_MAP_KEY_DELAY > 0
     wait_ms(ENCODER_MAP_KEY_DELAY);
 #    endif // ENCODER_MAP_KEY_DELAY > 0
 
-    action_exec(clockwise ? MAKE_ENCODER_CW_EVENT(index, false) : MAKE_ENCODER_CCW_EVENT(index, false));
+    //action_exec(clockwise ? MAKE_ENCODER_CW_EVENT(index, false) : MAKE_ENCODER_CCW_EVENT(index, false));
+    if (clockwise) {
+        MAKE_ENCODER_CW_EVENT(index, false);
+        action_exec(dummy_event);
+    } else {
+        MAKE_ENCODER_CCW_EVENT(index, false);
+        action_exec(dummy_event);
+    }
 #    if ENCODER_MAP_KEY_DELAY > 0
     wait_ms(ENCODER_MAP_KEY_DELAY);
 #    endif // ENCODER_MAP_KEY_DELAY > 0

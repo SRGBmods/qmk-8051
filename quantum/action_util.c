@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2013 Jun Wako <wakojun@gmail.com>
 
@@ -35,7 +36,10 @@ static uint8_t suppressed_mods    = 0;
 
 // TODO: pointer variable is not needed
 // report_keyboard_t keyboard_report = {};
-report_keyboard_t *keyboard_report = &(report_keyboard_t){};
+//report_keyboard_t *keyboard_report = &(report_keyboard_t){};
+report_keyboard_t actual_keyboard_report = {.raw={0,0,0,0,0,0,0,0}};
+// = {} raise error. ={.raw={}} and ={.raw={0}} compiles but sdcc just refuses to initialize them as 0. damm you sdcc.
+report_keyboard_t *keyboard_report = &actual_keyboard_report;
 
 extern inline void add_key(uint8_t key);
 extern inline void del_key(uint8_t key);

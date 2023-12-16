@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /* Copyright 2019 Jason Williams (Wilba)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -82,7 +83,7 @@ void eeconfig_update_rgb_matrix(void);
 
 // Can be called in an overriding via_init_kb() to test if keyboard level code usage of
 // EEPROM is invalid and use/save defaults.
-bool via_eeprom_is_valid(void) {
+__xdata bool via_eeprom_is_valid(void) {
 #ifdef VIAL_ENABLE
     uint8_t magic0 = BUILD_ID & 0xFF;
     uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;
@@ -99,7 +100,7 @@ bool via_eeprom_is_valid(void) {
 
 // Sets VIA/keyboard level usage of EEPROM to valid/invalid
 // Keyboard level code (eg. via_init_kb()) should not call this
-void via_eeprom_set_valid(bool valid) {
+void via_eeprom_set_valid(__xdata bool valid) {
 #ifdef VIAL_ENABLE
     uint8_t magic0 = BUILD_ID & 0xFF;
     uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;

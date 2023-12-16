@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 /*
 Copyright 2011,2012 Jun Wako <wakojun@gmail.com>
 
@@ -236,6 +237,7 @@ typedef struct {
     uint16_t y;
 } __attribute__((packed)) report_digitizer_t;
 
+#ifdef JOYSTICK_ENABLE
 typedef struct {
 #ifdef JOYSTICK_SHARED_EP
     uint8_t report_id;
@@ -252,6 +254,9 @@ typedef struct {
     uint8_t buttons[(JOYSTICK_BUTTON_COUNT - 1) / 8 + 1];
 #endif
 } __attribute__((packed)) report_joystick_t;
+#else
+typedef void report_joystick_t; //SDCC cannot handle empty struct
+#endif
 
 /* keycode to system usage */
 static inline uint16_t KEYCODE2SYSTEM(uint8_t key) {

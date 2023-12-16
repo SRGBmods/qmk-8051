@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -14,8 +15,8 @@
 #endif
 
 #if defined(VIA_ENABLE)
-bool via_eeprom_is_valid(void);
-void via_eeprom_set_valid(bool valid);
+__xdata bool via_eeprom_is_valid(void);
+void via_eeprom_set_valid(__xdata bool valid);
 void eeconfig_init_via(void);
 #endif
 
@@ -117,8 +118,8 @@ void eeconfig_disable(void) {
  *
  * FIXME: needs doc
  */
-bool eeconfig_is_enabled(void) {
-    bool is_eeprom_enabled = (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER);
+__xdata bool eeconfig_is_enabled(void) {
+    __xdata bool is_eeprom_enabled = (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER);
 #ifdef VIA_ENABLE
     if (is_eeprom_enabled) {
         is_eeprom_enabled = via_eeprom_is_valid();
@@ -131,8 +132,8 @@ bool eeconfig_is_enabled(void) {
  *
  * FIXME: needs doc
  */
-bool eeconfig_is_disabled(void) {
-    bool is_eeprom_disabled = (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER_OFF);
+__xdata bool eeconfig_is_disabled(void) {
+    __xdata bool is_eeprom_disabled = (eeprom_read_word(EECONFIG_MAGIC) == EECONFIG_MAGIC_NUMBER_OFF);
 #ifdef VIA_ENABLE
     if (!is_eeprom_disabled) {
         is_eeprom_disabled = !via_eeprom_is_valid();
@@ -254,14 +255,14 @@ void eeconfig_update_haptic(uint32_t val) {
  *
  * FIXME: needs doc
  */
-bool eeconfig_read_handedness(void) {
+__xdata bool eeconfig_read_handedness(void) {
     return !!eeprom_read_byte(EECONFIG_HANDEDNESS);
 }
 /** \brief eeconfig update split handedness
  *
  * FIXME: needs doc
  */
-void eeconfig_update_handedness(bool val) {
+void eeconfig_update_handedness(__xdata bool val) {
     eeprom_update_byte(EECONFIG_HANDEDNESS, !!val);
 }
 
@@ -270,7 +271,7 @@ void eeconfig_update_handedness(bool val) {
  *
  * FIXME: needs doc
  */
-bool eeconfig_is_kb_datablock_valid(void) {
+__xdata bool eeconfig_is_kb_datablock_valid(void) {
     return eeprom_read_dword(EECONFIG_KEYBOARD) == (EECONFIG_KB_DATA_VERSION);
 }
 /** \brief eeconfig read keyboard data block
@@ -307,7 +308,7 @@ __attribute__((weak)) void eeconfig_init_kb_datablock(void) {
  *
  * FIXME: needs doc
  */
-bool eeconfig_is_user_datablock_valid(void) {
+__xdata bool eeconfig_is_user_datablock_valid(void) {
     return eeprom_read_dword(EECONFIG_USER) == (EECONFIG_USER_DATA_VERSION);
 }
 /** \brief eeconfig read user data block

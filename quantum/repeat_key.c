@@ -1,3 +1,4 @@
+#include "sdcc_dummy_macros.h"
 // Copyright 2022-2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");

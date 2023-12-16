@@ -95,6 +95,9 @@
                 "atmega328p",
                 "atmega328",
                 "attiny85",
+                "ch552",
+                "ch554",
+                "ch555",
                 "unknown"
             ]
         },
@@ -197,7 +200,8 @@
                 "uf2boot",
                 "unknown",
                 "usbasploader",
-                "wb32-dfu"
+                "wb32-dfu",
+                "ch55xbl"
             ]
         },
         "bootloader_instructions": {
