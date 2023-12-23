@@ -288,20 +288,24 @@ enum usb_endpoints {
 #else //CH555
 
 
-#define    KEYBOARD_IN_EPNUM   1
-//#    define KEYBOARD_IN_EPNUM SHARED_IN_EPNUM
+#    define KEYBOARD_IN_EPNUM   1
 
-//#define    MOUSE_IN_EPNUM   1
-//#    define MOUSE_IN_EPNUM SHARED_IN_EPNUM
+#if defined(MOUSE_ENABLE)
+#    define MOUSE_IN_EPNUM SHARED_IN_EPNUM
+#endif
 
-#define    RAW_IN_EPNUM 2
-//#        define RAW_OUT_EPNUM RAW_IN_EPNUM
-#define    RAW_OUT_EPNUM 3
+#ifdef RAW_ENABLE
+#define    RAW_IN_EPNUM 5
+#define    RAW_OUT_EPNUM 4
+#endif
 
-#define    SHARED_IN_EPNUM 5
+#define    SHARED_IN_EPNUM 2
 
-//    CONSOLE_IN_EPNUM ,
-//#define CONSOLE_OUT_EPNUM CONSOLE_IN_EPNUM
+// TODO put console, midi and cdc endpoints to Device1 of ch555
+#ifdef CONSOLE_ENABLE
+#   define CONSOLE_IN_EPNUM 6
+#   define CONSOLE_OUT_EPNUM 3
+#endif
 
 //    MIDI_STREAM_IN_EPNUM ,
 //#        define MIDI_STREAM_OUT_EPNUM MIDI_STREAM_IN_EPNUM
@@ -312,11 +316,15 @@ enum usb_endpoints {
 //#        define CDC_OUT_EPNUM CDC_IN_EPNUM
 //    CDC_OUT_EPNUM         ,
 
+#ifdef JOYSTICK_ENABLE
 //    JOYSTICK_IN_EPNUM ,
-//#        define JOYSTICK_IN_EPNUM SHARED_IN_EPNUM
+#        define JOYSTICK_IN_EPNUM SHARED_IN_EPNUM
+#endif
 
+#ifdef DIGITIZER_ENABLE
 //    DIGITIZER_IN_EPNUM ,
-//#        define DIGITIZER_IN_EPNUM SHARED_IN_EPNUM
+#        define DIGITIZER_IN_EPNUM SHARED_IN_EPNUM
+#endif
 #endif //CH555
 
 #ifdef PROTOCOL_LUFA

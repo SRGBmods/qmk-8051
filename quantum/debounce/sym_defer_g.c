@@ -20,7 +20,7 @@ When no state changes have occured for DEBOUNCE milliseconds, we push the state.
 #include "debounce.h"
 #include "timer.h"
 #include <string.h>
-#include "print.h"
+#include "debug.h"
 #ifndef DEBOUNCE
 #    define DEBOUNCE 5
 #endif
@@ -43,7 +43,7 @@ bool debounce(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows, bool 
         if (memcmp(cooked, raw, sizeof(matrix_row_t) * num_rows) != 0) {
             memcpy(cooked, raw, sizeof(matrix_row_t) * num_rows);
             cooked_changed = true;
-            print("chd\n");
+            dprint("chd\n");
         }
         debouncing = false;
     }

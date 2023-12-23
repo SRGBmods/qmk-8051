@@ -9,17 +9,17 @@ km='vial'
 #qmk generate-compilation-database 
 #qmk compile 
 
-
+../../sdccMCS51rm/sdcc_MCS51_rm.py .build/obj_${kb}_${km}/ > ./${kb}_${km}.sdcc_mcs51_rm.log 
 
 echo "Check if BIT_BANK is used:"
 rg '\bbits\b' -t asm .build/obj_${kb}_${km} | rg -v ';|special function bits'
-./util/del_bit_bank_area.py .build/obj_${kb}_${km}/protocol/ch555/usb_device.asm
+./util/del_bit_bank_area.py .build/obj_${kb}_${km}/protocol/ch555/usb_device.asm.mod
 
-asmlist=$(find .build/obj_${kb}_${km} -name "*asm" -type f) 
+asmlist=$(find .build/obj_${kb}_${km} -name "*asm.mod" -type f) 
 for file in $asmlist
     do
     # compile from .asm to .rel :
-    sdas8051 -plosgffw "${file%.asm}.rel" "$file"
+    sdas8051 -plosgffw "${file%.asm.mod}.rel" "$file"
 done 
 
 rellist=$(find .build/obj_${kb}_${km} -name "*rel" -type f) 

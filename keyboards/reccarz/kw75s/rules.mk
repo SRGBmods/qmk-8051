@@ -29,11 +29,11 @@ EEPROM_DRIVER = transient
 #EEPROM_DRIVER = wear_leveling
 
 
-RAW_ENABLE = yes
 EXTRAKEY_ENABLE = yes
 NKRO_ENABLE = no
 MOUSEKEY_ENABLE = no
 JOYSTICK_ENABLE = no
+RAW_ENABLE = no
 
 DIGITIZER_ENABLE = no #absolute mouse
 CONSOLE_ENABLE = no

@@ -4,11 +4,8 @@
 
 # Compiler settings
 #
-#SDCC_PATH = ~/sdcc-4.3.0-amd64-unknown-linux2.5/sdcc-4.3.0/
-SDCC_PATH = ~/sdcc-snapshot-amd64-unknown-linux2.5-20231120-14443/sdcc
-#SDCC_PATH = ~/sdcc-snapshot-amd64-unknown-linux2.5-20231205-14509/sdcc
-CC = $(CC_PREFIX) $(SDCC_PATH)/bin/sdcc
-PACK_HEX   = $(SDCC_PATH)/bin/packihx
+CC = sdcc
+PACK_HEX   = packihx
 OBJCOPY = objcopy
 #WCHISP    ?= python3 tools/chprog.py
 #WCHISP ?= wchisptool -g -f

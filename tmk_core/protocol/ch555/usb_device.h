@@ -6,24 +6,13 @@
 * Description        : CH55X Usb device operation related definitions
 *******************************************************************************/
 
-
-
-//#ifndef __DEVICE_H__
-//#define __DEVICE_H__
 #pragma once
-
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
 
 /******************************************************************************/
 /* The header file contains */
-//#include "MAIN.H"	 															/* Main program definition related header files */
 #include "ch555.h"
 #include "usb.h"
 #include "usb_descriptor.h"
-//#include "ch555_usb_stack.h"
-//#include "usb_desc.h"
 
 /***********************************************************************************************************************/
 /* Usb device related macro definitions */
@@ -59,7 +48,14 @@
 /************************************************/ 
 /* Endpoint size and other definitions */
 #define DEF_ENDP0_SIZE             FIXED_CONTROL_ENDPOINT_SIZE
-#if KEYBOARD_IN_EPNUM==1 || RAW_IN_EPNUM==1 || SHARED_IN_EPNUM==1 || CONSOLE_IN_EPNUM==1 || MIDI_STREAM_IN_EPNUM==1 || CDC_IN_EPNUM==1 || JOYSTICK_IN_EPNUM==1 || DIGITIZER_IN_EPNUM==1
+#if KEYBOARD_IN_EPNUM==1 || \
+    RAW_IN_EPNUM==1 || \
+    SHARED_IN_EPNUM==1 || \
+    CONSOLE_IN_EPNUM==1 || \
+    MIDI_STREAM_IN_EPNUM==1 || \
+    CDC_IN_EPNUM==1 || \
+    JOYSTICK_IN_EPNUM==1 || \
+    DIGITIZER_IN_EPNUM==1
 #define USE_D0_EP1_IN
 //#define DEF_EP1_SIZE               DEFAULT_ENDP0_SIZE                           /* Keyboard endpoint packet size */
 #endif
@@ -96,42 +92,8 @@
 #define DEF_USB_SET_IDLE           0x0A           								/* set idle for key or mouse */
 #define DEF_USB_SET_PROTOCOL       0x0B           								/* set protocol for bios type */
 
-/*******************************************************************************/
-/* Function enable related macro definitions */
-//#define DEF_PACK_HEAD1		   	   0x57		  									/* Header byte 1 */
-//#define DEF_PACK_HEAD2		       0xAB 										/* Header byte 2 */
-//
-//#define DEF_CMD_GET_RGBMODEL       0x01
-//#define DEF_CMD_SET_RGBMODEL       0x02  
-//#define DEF_CMD_GET_RGBDATA        0x03
-//#define DEF_CMD_SET_RGBDATA        0x04     
-//
-//typedef struct				//Data bit alignment
-//{
-//	UINT8 first;		
-//	UINT8 second;	    
-//	UINT8 cmd1;		    
-//	UINT8 cmd2;		    
-//    UINT8 cou1;		
-//	UINT8 cou2;		
-//	UINT8 len1;		    
-//	UINT8 len2;		
-//    UINT8 dat[56];
-//}HID_VALUE;  
-//
-//#define pHID_VALUE     ((HID_VALUE *)pUSB_BUF_DEV0+UX_EP2_ADDR)    
-//void	InitUSB_Device( void );
-
 /***********************************************************************************************************************/
 /* variable expansion */
-//extern UINT8X MyDevice_DevDesc[ ];												/* USB device descriptor */
-//extern UINT8C MyDevice_CfgDesc[ ];												/* USB configuration descriptor */
-//extern UINT8C MyDevice_KB_RP_Desc[ ];											/* USB keyboard report descriptor */
-//extern UINT8C MyDevice_HID_RP_Desc[ ];											/* Usb custom hid report descriptor */
-//extern UINT8C MyDevice_Media1_RP_Desc[ ];										/* Keyboard Multimedia 1 Report Descriptor */					
-//extern UINT8C MyDevice_StringLangID[ ];											/* Language string descriptor */
-//extern UINT8C MyDevice_StringProduct[ ];										/* product string descriptor */
-//extern UINT8C MyDevice_StringSerial[ ];											/* Serial number string descriptor */
 
 extern volatile UINT8  D0SetupReqCode;											/* USB Setup package request code */
 extern volatile UINT16 D0SetupLen;												/* USB Setup packet length */
@@ -144,19 +106,28 @@ extern volatile UINT8  MCU_Sleep_Operate;										/* Mcu sleep operation flag *
 
 extern volatile UINT8  KB_USB_UpStatus;											/*  */
 extern volatile UINT8  KB_USB_SetReport;
+#ifdef USE_D0_EP1_OUT
+extern volatile UINT8  ep1_data_wait;											/* endpoint 1 data waiting flag*/
+#endif
+#ifdef USE_D0_EP2_OUT
+extern volatile UINT8  ep2_data_wait;											/* endpoint 2 data waiting flag*/
+#endif
+#ifdef USE_D0_EP3_OUT
 extern volatile UINT8  ep3_data_wait;											/* endpoint 3 data waiting flag*/
+#endif
+#ifdef USE_D0_EP4_OUT
+extern volatile UINT8  ep4_data_wait;											/* endpoint 4 data waiting flag*/
+#endif
 /***********************************************************************************************************************/
 /* Function expansion */
 extern void USB_Device_Init( void );											/* CH55X USB device initialization */
 extern void USB_WakeUp_PC( void );												/* CH55X Usb device wakes up computer */	
 extern void CH55X_Sleep_Deal( void );											/* Ch55x microcontroller sleep processing */
 
+#pragma save
+#pragma nooverlay
 extern void USB_DeviceInterrupt( void ) __interrupt(INT_NO_USB) __using(1);
-//#ifdef __cplusplus
-//}
-//#endif
-
-//#endif
+#pragma restore
 
 /***********************************************************************************************************************/
 

@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 #ifndef BOOL
-typedef __sbit                          BOOL;
+typedef __bit                           BOOL;
 #endif
 #ifndef UINT8
 typedef unsigned char                   UINT8;

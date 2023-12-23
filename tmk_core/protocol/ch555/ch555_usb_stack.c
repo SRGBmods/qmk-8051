@@ -16,6 +16,9 @@
 #define send_report(endpoint,report,size) _send_report_EP(endpoint,report,size)
 #define _send_report_EP(endpoint,report,size) send_report_EP##endpoint(report,size)
 
+#define read_EP(endpoint,report,size) _read_EP(endpoint,report,size)
+#define _read_EP(endpoint,report,size) read_EP##endpoint(report,size)
+
 #include "report.h"
 #include "host.h"
 #include "host_driver.h"
@@ -71,12 +74,10 @@ host_driver_t  ch555_usb_stack_driver = {keyboard_leds, send_keyboard, send_mous
 
 
 
-//extern volatile UINT8  KB_USB_UpStatus;	
-//extern volatile UINT8  KB_USB_SetReport;
-
+#ifdef USE_D0_EP1_IN
 void send_report_EP1(void *report, size_t size) {
-    print("SP");
-    printf("%x\n",SP);
+    //print("SP");
+    //printf("%x\n",SP);
     //uint8_t timeout = 255;
 
     //if (USB_DeviceState != DEVICE_STATE_Configured) return;
@@ -92,13 +93,6 @@ void send_report_EP1(void *report, size_t size) {
     //Endpoint_Write_Stream_LE(report, size, NULL);
     //Endpoint_ClearIN();
 
-//    uint8_t i;
-//    while(HID_writeBusyFlag);                       // wait for ready to write
-//    for(i=0; i<size; i++) EP1_buffer[i] = ((uint8_t *)report)[i];    // copy report to EP1 buffer
-//    HID_writeBusyFlag = 1;                          // set busy flag
-//    D0_EP1T_L = size;                                          // set length to upload
-//    D0_EP1RES = D0_EP1RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;  // upload data and respond ACK
-
 
     if (!USB_EnumStatus) return;
 	if( USB_SleepStatus == 0x03 )
@@ -106,15 +100,20 @@ void send_report_EP1(void *report, size_t size) {
 		USB_WakeUp_PC( );
 	}
 
-	/*  */
-	while( ( D0_EP1RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK );                  
+    // Check if write ready for a polling interval around 10ms 
+    uint8_t timeout = 255;
+    while (timeout-- && ( ( D0_EP1RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK )) {
+        wait_us(40);
+    }
+    if ( ( D0_EP1RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK ) return;
 	
-	/*  */
 	memcpy( pUSB_BUF_DEV0 + UX_EP1_ADDR, (uint8_t *)report, size );
 	D0_EP1RES ^= bUEP_X_TOG;	
 	D0_EP1T_L = size;                                       
 	D0_EP1RES = D0_EP1RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
 }
+#endif
+#ifdef USE_D0_EP2_IN
 void send_report_EP2(void *report, size_t size) {
     if (!USB_EnumStatus) return;
 	if( USB_SleepStatus == 0x03 )
@@ -122,13 +121,62 @@ void send_report_EP2(void *report, size_t size) {
 		USB_WakeUp_PC( );
 	}
 
-	while( ( D0_EP2RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK );                  
+    // Check if write ready for a polling interval around 10ms 
+    uint8_t timeout = 255;
+    while (timeout-- && ( ( D0_EP2RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK )) {
+        wait_us(40);
+    }
+    if ( ( D0_EP2RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK ) return;
 	
 	memcpy( pUSB_BUF_DEV0 + UX_EP2_ADDR, (uint8_t *)report, size );
 	D0_EP2RES ^= bUEP_X_TOG;	
 	D0_EP2T_L = size;                                       
 	D0_EP2RES = D0_EP2RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
 }
+#endif
+#ifdef USE_D0_EP3_IN
+void send_report_EP3(void *report, size_t size) {
+    if (!USB_EnumStatus) return;
+	if( USB_SleepStatus == 0x03 )
+	{
+		USB_WakeUp_PC( );
+	}
+
+    // Check if write ready for a polling interval around 10ms 
+    uint8_t timeout = 255;
+    while (timeout-- && ( ( D0_EP3RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK )) {
+        wait_us(40);
+    }
+    if ( ( D0_EP3RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK ) return;
+	
+	memcpy( pUSB_BUF_DEV0 + UX_EP3_ADDR, (uint8_t *)report, size );
+	D0_EP3RES ^= bUEP_X_TOG;	
+	D0_EP3T_L = size;                                       
+	D0_EP3RES = D0_EP3RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+}
+#endif
+#ifdef USE_D0_EP4_IN
+void send_report_EP4(void *report, size_t size) {
+    if (!USB_EnumStatus) return;
+	if( USB_SleepStatus == 0x03 )
+	{
+		USB_WakeUp_PC( );
+	}
+
+    // Check if write ready for a polling interval around 10ms 
+    uint8_t timeout = 255;
+    while (timeout-- && ( ( D0_EP4RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK )) {
+        wait_us(40);
+    }
+    if ( ( D0_EP4RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK ) return;
+	
+	memcpy( pUSB_BUF_DEV0 + UX_EP4_ADDR, (uint8_t *)report, size );
+	D0_EP4RES ^= bUEP_X_TOG;	
+	D0_EP4T_L = size;                                       
+	D0_EP4RES = D0_EP4RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+}
+#endif
+#ifdef USE_D0_EP5_IN
 void send_report_EP5(void *report, size_t size) {
     if (!USB_EnumStatus) return;
 	if( USB_SleepStatus == 0x03 )
@@ -136,16 +184,19 @@ void send_report_EP5(void *report, size_t size) {
 		USB_WakeUp_PC( );
 	}
 
-	while( ( D0_EP5RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK );                  
+    // Check if write ready for a polling interval around 10ms 
+    uint8_t timeout = 255;
+    while (timeout-- && ( ( D0_EP5RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK )) {
+        wait_us(40);
+    }
+    if ( ( D0_EP5RES & MASK_UEP_X_RES ) == UEP_X_RES_ACK ) return;
 	
-    //uint8_t *pRpt = (uint8_t *)report;
-    //printf("ep5 %x %x %x \n",*(pRpt),*(pRpt+1),*(pRpt+2));
 	memcpy( pUSB_BUF_DEV0 + UX_EP5_ADDR, (uint8_t *)report, size );
 	D0_EP5RES ^= bUEP_X_TOG;	
 	D0_EP5T_L = size;                                       
 	D0_EP5RES = D0_EP5RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
 }
-//#define send_report(endpoint,report,size) send_report_EP##endpoint (report,size)
+#endif
 
 //#define D0_EPxRES_BASE_ADDR   2200 
 /*
@@ -167,6 +218,55 @@ void send_report(uint8_t endpoint, void *report, size_t size) {
 	*D0_EPxT_L = size;                                       
 	*D0_EPxRES = *D0_EPxRES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
 } */
+
+#ifdef USE_D0_EP1_OUT
+bool read_EP1(void *report, size_t size) {
+	if ( ep1_data_wait ) {                 
+        ep1_data_wait = 0;
+	    memcpy( report, pUSB_BUF_DEV0 + UX_EP1_ADDR, size );
+	    D0_EP1RES ^= bUEP_X_TOG;	
+	    D0_EP1RES = D0_EP1RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+        return true; //read data success
+    }
+    return false; //no data
+}
+#endif
+#ifdef USE_D0_EP2_OUT
+bool read_EP2(void *report, size_t size) {
+	if ( ep2_data_wait ) {                 
+        ep2_data_wait = 0;
+	    memcpy( report, pUSB_BUF_DEV0 + UX_EP2_ADDR, size );
+	    D0_EP2RES ^= bUEP_X_TOG;	
+	    D0_EP2RES = D0_EP2RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+        return true; //read data success
+    }
+    return false; //no data
+}
+#endif
+#ifdef USE_D0_EP3_OUT
+bool read_EP3(void *report, size_t size) {
+	if ( ep3_data_wait ) {                 
+        ep3_data_wait = 0;
+	    memcpy( report, pUSB_BUF_DEV0 + UX_EP3_ADDR, size );
+	    D0_EP3RES ^= bUEP_X_TOG;	
+	    D0_EP3RES = D0_EP3RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+        return true; //read data success
+    }
+    return false; //no data
+}
+#endif
+#ifdef USE_D0_EP4_OUT
+bool read_EP4(void *report, size_t size) {
+	if ( ep4_data_wait ) {                 
+        ep4_data_wait = 0;
+	    memcpy( report, pUSB_BUF_DEV0 + UX_EP4_ADDR, size );
+	    D0_EP4RES ^= bUEP_X_TOG;	
+	    D0_EP4RES = D0_EP4RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+        return true; //read data success
+    }
+    return false; //no data
+}
+#endif
 
 #ifdef VIRTSER_ENABLE
 // clang-format off
@@ -223,11 +323,11 @@ void raw_hid_receive(uint8_t *data, uint8_t length) {
  *
  * FIXME: Needs doc
  */
-extern volatile UINT8  ep3_data_wait;											/* endpoint 3 data waiting flag*/
+//extern volatile UINT8  ep3_data_wait;											/* endpoint 3 data waiting flag*/
 static void raw_hid_task(void) {
     // Create a temporary buffer to hold the read in data from the host
     uint8_t data[RAW_EPSIZE];
-    //bool    data_read = false;
+    bool    data_read = false;
 
     // Device must be connected and configured for the task to run
     //if (USB_DeviceState != DEVICE_STATE_Configured) return;
@@ -252,12 +352,16 @@ static void raw_hid_task(void) {
     //    }
     //}
 
-	if ( ep3_data_wait ) {                 
-        ep3_data_wait = 0;
-	    memcpy( data, pUSB_BUF_DEV0 + UX_EP3_ADDR, RAW_EPSIZE );
-	    D0_EP3RES ^= bUEP_X_TOG;	
-	    D0_EP3RES = D0_EP3RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
+	//if ( ep3_data_wait ) {                 
+    //    ep3_data_wait = 0;
+	//    memcpy( data, pUSB_BUF_DEV0 + UX_EP3_ADDR, RAW_EPSIZE );
+	//    D0_EP3RES ^= bUEP_X_TOG;	
+	//    D0_EP3RES = D0_EP3RES & ~MASK_UEP_X_RES | UEP_X_RES_ACK;               
 
+    //    raw_hid_receive(data, sizeof(data));
+    //}
+    data_read = read_EP(RAW_OUT_EPNUM,data,RAW_EPSIZE);
+    if (data_read) {
         raw_hid_receive(data, sizeof(data));
     }
 }

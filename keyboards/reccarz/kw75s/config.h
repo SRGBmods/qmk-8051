@@ -15,10 +15,11 @@
 #define NUM_ENCODERS 1
 #define ENCODERS_PAD_A { PORT2_7 }
 #define ENCODERS_PAD_B { PORT3_7 }
+#define ENCODER_RESOLUTION 2
 
-//#define NO_PRINT 
-//#define NO_DEBUG
-#define ACTION_DEBUG
+#define NO_PRINT 
+#define NO_DEBUG
+//#define ACTION_DEBUG
 
 // for ch552, the code size is too small:
 //#define NO_ACTION_LAYER

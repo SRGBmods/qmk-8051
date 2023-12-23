@@ -13,9 +13,6 @@
 #include "hal.h"
 #include "debug.h"
 #include "usb_device.h"
-//#include "usb_descriptor.h"
-
-
 
 /******************************************************************************/
 /* constant variable definition */
@@ -34,7 +31,18 @@ volatile UINT8  MCU_Sleep_Operate = 0x00;										/* Mcu sleep operation flag *
    
 
 volatile UINT8  KB_USB_UpStatus = 0x00;											/* endpoint 1 busy flag*/
+#ifdef USE_D0_EP1_OUT
+volatile UINT8  ep1_data_wait   = 0x00;											/* endpoint 1 data waiting flag*/
+#endif
+#ifdef USE_D0_EP2_OUT
+volatile UINT8  ep2_data_wait   = 0x00;											/* endpoint 2 data waiting flag*/
+#endif
+#ifdef USE_D0_EP3_OUT
 volatile UINT8  ep3_data_wait   = 0x00;											/* endpoint 3 data waiting flag*/
+#endif
+#ifdef USE_D0_EP4_OUT
+volatile UINT8  ep4_data_wait   = 0x00;											/* endpoint 4 data waiting flag*/
+#endif
 
 //UINT8D  RGB_Mode = 0x00;
 void USB_EP_init( void )  
@@ -93,7 +101,18 @@ void USB_Device_Init( void )
 	USB_SleepStatus = 0x00;														/* USB sleep state */		
 	MCU_Sleep_Operate = 0x00;													/* Mcu sleep operation flag */
 	KB_USB_UpStatus = 0x00;														/* Usb keyboard and mouse upload status */
+#ifdef USE_D0_EP1_OUT
+	ep1_data_wait   = 0x00;														/* Usb keyboard and mouse upload status */
+#endif
+#ifdef USE_D0_EP2_OUT
+	ep2_data_wait   = 0x00;														/* Usb keyboard and mouse upload status */
+#endif
+#ifdef USE_D0_EP3_OUT
 	ep3_data_wait   = 0x00;														/* Usb keyboard and mouse upload status */
+#endif
+#ifdef USE_D0_EP4_OUT
+	ep4_data_wait   = 0x00;														/* Usb keyboard and mouse upload status */
+#endif
 	KB_USB_SetReport = 0x00;													/* Usb keyboard set report value */  
 
 	/* Initialize usb related registers */
@@ -102,7 +121,7 @@ void USB_Device_Init( void )
     
 	//SAFE_MOD = 0x55;
 	//SAFE_MOD = 0xAA;
-	//GLOBAL_CFG |= bXIR_XSFR;                 // use __pdata to access xSFR instead of pRAM        
+	//GLOBAL_CFG |= bXIR_XSFR;               // use __pdata to access xSFR instead of pRAM        
 
 	USB_CTRL = 0;                            // usb physical config
 
@@ -133,8 +152,10 @@ void USB_Device_Init( void )
 #pragma nooverlay
 void USB_DeviceInterrupt( void ) __interrupt(INT_NO_USB) __using(1)
 {
-    __data UINT8  us,i;
-	__data UINT16 len;
+    UINT8  save = USB_IE;
+    USB_IE = 0;
+    UINT8  us,i;
+	UINT16 len;
 
 USB_DevIntNext:
 	us = USB_IF; 
@@ -287,9 +308,9 @@ USB_DevIntNext:
 				if(( D0_STATUS & ( bUXS_SETUP_ACT | MASK_UXS_TOKEN ) ) == ( bUXS_SETUP_ACT | UXS_TOKEN_FREE ))
 				{
 					/* endpoint 0# SETUP */
+					len = 0;  														/* Defaults to success and uploading 0 length */ 
 					D0_EP0RES = bUEP_R_TOG | bUEP_T_TOG | UEP_R_RES_ACK | UEP_T_RES_ACK;
 
-					len = 0;  														/* Defaults to success and uploading 0 length */               
 					D0SetupLen = pD0_SETUP_REQ->wLengthL + ( (UINT16)pD0_SETUP_REQ->wLengthH << 8 );
 					D0SetupReqCode = pD0_SETUP_REQ->bRequest;
 					
@@ -943,6 +964,7 @@ USB_DevIntNext:
 	{
 		goto USB_DevIntNext;
 	}    
+    USB_IE = save;
 }
 #pragma restore
 

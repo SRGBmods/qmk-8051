@@ -1,5 +1,6 @@
 #include "gpio.h"
 #include <stdbool.h>
+#include <stdint.h>
 #include "ch555.h" 
 
 __code uint8_t pin_to_pinmask[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
@@ -7,10 +8,10 @@ __code uint8_t pin_to_pinmask[] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x
 //TODO: implement P5, P6; P7.2 to 7.7 does not exist
 
 void pinModeInputHighQMK(uint8_t pin) {
-    //__data uint8_t port = PORTx(pin);
-    //__data uint8_t pinmask  = PIN_MASK(pin);
-    uint8_t port = PORTx(pin);
-    uint8_t pinmask  = PIN_MASK(pin);
+    __data uint8_t port = PORTx(pin);
+    __data uint8_t pinmask  = PIN_MASK(pin);
+    //uint8_t port = PORTx(pin);
+    //uint8_t pinmask  = PIN_MASK(pin);
     switch (port) {
 #ifdef PORT7
         case PORT7:
@@ -43,8 +44,8 @@ void pinModeInputHighQMK(uint8_t pin) {
 }
 void pinModeOutputQMK(uint8_t pin) {
 #ifdef PORT7
-    uint8_t port = PORTx(pin);
-    uint8_t pinmask  = PIN_MASK(pin);
+    __data uint8_t port = PORTx(pin);
+    __data uint8_t pinmask  = PIN_MASK(pin);
     if (port == PORT7) {
         P7 |=  (pinmask<<2); // _DIR
     }
@@ -223,8 +224,8 @@ void pinModeBiDi(uint8_t pin) {
     }
 }
 uint8_t readPin(uint8_t pin) {
-    uint8_t port = PORTx(pin);
-    uint8_t pinmask  = PIN_MASK(pin);
+    __data uint8_t port = PORTx(pin);
+    __data uint8_t pinmask  = PIN_MASK(pin);
     switch (port) {
 #ifdef PORT0
         case PORT0:
@@ -262,8 +263,8 @@ uint8_t readPin(uint8_t pin) {
     }
 }
 void writePinHigh(uint8_t pin) {
-    uint8_t port = PORTx(pin);
-    uint8_t pinmask  = PIN_MASK(pin);
+    __data uint8_t port = PORTx(pin);
+    __data uint8_t pinmask  = PIN_MASK(pin);
     switch (port) {
 #ifdef PORT0
         case PORT0:
@@ -298,8 +299,8 @@ void writePinHigh(uint8_t pin) {
     }
 }
 void writePinLow(uint8_t pin) {
-    uint8_t port = PORTx(pin);
-    uint8_t pinmask  = PIN_MASK(pin);
+    __data uint8_t port = PORTx(pin);
+    __data uint8_t pinmask  = PIN_MASK(pin);
     switch (port) {
 #ifdef PORT0
         case PORT0:
