@@ -176,7 +176,6 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
 #    ifndef MOUSE_SHARED_EP
 };
 #    endif
-const uint8_t MouseReport_size = sizeof(MouseReport);
 #endif
 
 #ifdef JOYSTICK_ENABLE
@@ -246,7 +245,6 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
 #    ifndef JOYSTICK_SHARED_EP
 };
 #    endif
-const uint8_t JoystickReport_size = sizeof(JoystickReport);
 #endif
 
 #ifdef DIGITIZER_ENABLE
@@ -292,7 +290,6 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
 #    ifndef DIGITIZER_SHARED_EP
 };
 #    endif
-const uint8_t DigitizerReport_size = sizeof(DigitizerReport);
 #endif
 
 #if defined(SHARED_EP_ENABLE) && !defined(SHARED_REPORT_STARTED)
@@ -387,6 +384,16 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM SharedReport[] = {
 #ifdef SHARED_EP_ENABLE
 };
 uint8_t const SharedReport_size = sizeof(SharedReport);
+#endif
+
+#if MOUSE_ENABLE && !MOUSE_SHARED_EP
+const uint8_t MouseReport_size = sizeof(MouseReport);
+#endif
+#if DIGITIZER_ENABLE && !DIGITIZER_SHARED_EP
+uint8_t const DigitizerReport_size = sizeof(DigitizerReport);
+#endif
+#if JOYSTICK_ENABLE && !JOYSTICK_SHARED_EP
+const uint8_t JoystickReport_size = sizeof(JoystickReport);
 #endif
 
 #ifdef RAW_ENABLE

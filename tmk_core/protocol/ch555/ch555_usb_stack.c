@@ -750,16 +750,15 @@ static void send_keyboard(report_keyboard_t *report) {
     /* If we're in Boot Protocol, don't send any report ID or other funky fields */
     if (!keyboard_protocol) {
         send_report(KEYBOARD_IN_EPNUM, &report->mods, 8);
-        //send_report(1, &report->mods, 8); // TODO fix this 
     } else {
 #ifdef NKRO_ENABLE
         if (keymap_config.nkro) {
-            ep   = SHARED_IN_EPNUM;
+            //ep   = SHARED_IN_EPNUM;
             size = sizeof(struct nkro_report);
         }
 #endif
 
-        send_report(KEYBOARD_IN_EPNUM, report, size); // TODO fix this
+        send_report(KEYBOARD_IN_EPNUM, report, size);
     }
 
     keyboard_report_sent = *report;
@@ -1066,7 +1065,7 @@ void protocol_pre_init(void) {
 void protocol_post_init(void) {
     host_set_driver(&ch555_usb_stack_driver);
     mDelaymS(1000); //wait some time for the usb enumeration complete. why? No idea.
-	P4_LED_KEY = 0xFF;															/* enable key mode */
+	P4_LED_KEY = 0xFF; // enable key mode 
 }
 
 #define NO_USB_STARTUP_CHECK //TODO implement this 

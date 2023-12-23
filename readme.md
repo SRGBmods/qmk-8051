@@ -1,36 +1,175 @@
-# Quantum Mechanical Keyboard Firmware
 
-[![Current Version](https://img.shields.io/github/tag/qmk/qmk_firmware.svg)](https://github.com/qmk/qmk_firmware/tags)
-[![Discord](https://img.shields.io/discord/440868230475677696.svg)](https://discord.gg/Uq7gcHh)
-[![Docs Status](https://img.shields.io/badge/docs-ready-orange.svg)](https://docs.qmk.fm)
-[![GitHub contributors](https://img.shields.io/github/contributors/qmk/qmk_firmware.svg)](https://github.com/qmk/qmk_firmware/pulse/monthly)
-[![GitHub forks](https://img.shields.io/github/forks/qmk/qmk_firmware.svg?style=social&label=Fork)](https://github.com/qmk/qmk_firmware/)
+# QMK for 8051
 
-This is a keyboard firmware based on the [tmk\_keyboard firmware](https://github.com/tmk/tmk_keyboard) with some useful features for Atmel AVR and ARM controllers, and more specifically, the [OLKB product line](https://olkb.com), the [ErgoDox EZ](https://ergodox-ez.com) keyboard, and the [Clueboard product line](https://clueboard.co).
+This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk), which is also a fork of the famous [QMK](https://github.com/qmk/qmk_firmware). 
+This project contains some small tweaks for supporting **8051** architech.  
 
-## Documentation
+Why supporting those dinosaurs? Haven't they gone extinct in the wild already?  
+Kind of. But! I see a ton of cheap chinese keyboards still using 8051, with dead simple firmwares. This project can open a whole new world for them.  
 
-* [See the official documentation on docs.qmk.fm](https://docs.qmk.fm)
+Currently, any keyboards using **CH555** (a variant of 8051) can use this code.  
+Because all CH555 keyboards I know have same 99% hardware/software. With some tiny edits from my test keyboard [Reccarz kw75s](/keyboards/reccarz/kw75s), you're good to go. 
 
-The docs are powered by [Docsify](https://docsify.js.org/) and hosted on [GitHub](/docs/). They are also viewable offline; see [Previewing the Documentation](https://docs.qmk.fm/#/contributing?id=previewing-the-documentation) for more details.
+---
 
-You can request changes by making a fork and opening a [pull request](https://github.com/qmk/qmk_firmware/pulls), or by clicking the "Edit this page" link at the bottom of any page.
+## I. What works and what not
 
-## Supported Keyboards
+The translation from AVR/ARM to 8051, or more precisely, from **gcc** to **sdcc** compiler, is not without some serious hassle.
+A lot of functions are untested, or not working (yet), I hope I can find a way to solve over time.
+- [x] Common functions should works, I tested layers, CapWords and ConsumerKey.  
+- [x] Encoder.  
+- [x] NKRO.  
+- [ ] MouseKey: untested, should works.
+- [ ] Display : untested.  
+- [ ] Console : not working, I'm using UART0 for debugging.  
 
-* [Planck](/keyboards/planck/)
-* [Preonic](/keyboards/preonic/)
-* [ErgoDox EZ](/keyboards/ergodox_ez/)
-* [Clueboard](/keyboards/clueboard/)
-* [Cluepad](/keyboards/clueboard/17/)
-* [Atreus](/keyboards/atreus/)
+- [ ] SCAN matrix: untested.   
+QMK use pointer for accessing GPIO. However, 8051 requires direct access to SFR for that.  
+My work-around introduces some delay, but I'm not sure if it affects the scan time or not.  
+- [ ] LED matrix : untested, but 8051 is probably too slow for that.  
+Though, CH555 have built-in LED matrix hardware, I might write driver for it later.  
+- [ ] Bluetooth  : untested. 
+All CH555 keyboards I know comes with HS6620B BLE module.  
+I recorded the whole MCU-BLE communication and definitely will cover bluetooth and LED matrix function in the future.  
 
-The project also includes community support for [lots of other keyboards](/keyboards/).
+- [ ] EEPROM  : transient EEPROM works, but might need some optimization.  
+I got a bunch of Warning about 'casting between pointer and literal'.  
+Also, CH555 don't have EEPROM, might need to do some simple wear leveling driver first.  
+- [ ] Vial    : not working, unfortunately. Got internal RAM overflow Error when link. Need to optimize the EEPROM driver first.
+- [ ] A major hassle of sdcc is it doesn't have `__attribute((weak))` like gcc.  
+So, if you write custom functions in your keymap.c, the ones end with `*_user`, you need to delete its corresponding definition in the QMK source code.   
+Similarly, if you write custom matrix scan routine, or some other custom driver, you also need to delete its correspoinding definition in QMK.   
 
-## Maintainers
+## II. How to use
 
-QMK is developed and maintained by Jack Humbert of OLKB with contributions from the community, and of course, [Hasu](https://github.com/tmk). The OLKB product firmwares are maintained by [Jack Humbert](https://github.com/jackhumbert), the Ergodox EZ by [ZSA Technology Labs](https://github.com/zsa), the Clueboard by [Zach White](https://github.com/skullydazed), and the Atreus by [Phil Hagelberg](https://github.com/technomancy).
+### 1. Setup
 
-## Official Website
+Besides cloning this repo and run `qmk setup`,  
+You need [SDCC](https://sourceforge.net/projects/sdcc/files/) version 4.4.0 or above.  
+[!NOTE] Use `sdcc --version` to check that.
 
-[qmk.fm](https://qmk.fm) is the official website of QMK, where you can find links to this page, the documentation, and the keyboards supported by QMK.
+### 2. Make your keymap
+
+The port definition of 8051 is not A1, A2, B1, B2, B3... but P0_1, P0_2,...
+So, instead of:
+```json
+    "matrix_pins": {
+        "cols": ["C14", "C15", "A0", "A1", A9", "H3"],
+        "rows": ["B4", "B3", "A15", "A14"]
+    },
+```
+Use this:
+```json
+    "matrix_pins": {
+        "cols": ["PORT0_1", "PORT1_2", "PORT3_0", "PORT0_3"],
+        "rows": ["PORT1_1", "PORT1_7", "PORT3_3"]
+    },
+```
+Standard 8051 MCU has 4 ports, from 0 -> 3. Each port have maximum 8 pins, from 0 -> 7.
+
+Other than this, just do as you always do for AVR/ARM.
+
+### 3. Then compile
+
+I suck at reading and modifying makefiles. After spending a weak try to modify QMK's build system, I gave up (Help me pls :smile:).  
+For now, at the QMK directory:
+```bash
+qmk compile -kb <your_keyboard> -km <your_keymap>
+```
+You will see an Error at the final message, when linking.  
+But that's alright, ignore it. I wrote a simple script for temporarily replace this final link step:
+```bash
+./compile.sh <your_keyboard> <your_keymap>
+```
+The result is a .hex and a .bin file at QMK directory. You can now use it for flashing.
+>[!NOTE]
+> For some unknow reason, when linking, I got this Error:  
+> ```bash
+>?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
+>```
+> I don't know why sdcc decides to preserve a byte for BIT_BANK, or what BIT_BANK is. Anyone know what BIT_BANK is, please help me :face_with_spiral_eyes:.  
+> I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
+> So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code. Re-assemble then Link. Haven't seen any problem so far.  
+
+
+---
+
+## III. Supported Keyboards
+
+* [Reccarz kw75s](/keyboards/reccarz/kw75s)
+* Any keyboard using CH555, for example:  
+    - QK60 RGB  
+    - GMK67  
+    - James Donkey A3  
+    - Fuhlen H75s (not sure about this one)
+* Potentially, some other keyboards with OLED screen, also using CH55x: 
+    - LangTu LK84  
+    - Monka 3075  
+>[!NOTE] With only 1kB xRAM, QMK for **CH552** is just **not** possible, unfortunately.
+
+* Other 8051 variants like BYK916/BYK816 are just innumberable...  
+However, the bootloader of these MCU need some reverse engineering. Some links if you're interested:
+	- [sinowealth-kb-tool](https://github.com/carlossless/sinowealth-kb-tool)
+	- [sinowealth-8051-dumper](https://github.com/gashtaan/sinowealth-8051-dumper)
+	- [bootloader reverse engineering attempt](https://github.com/jackhumbert/pinebook-pro-keyboard-updater/issues/23)
+
+
+### 1. For keyboards using CH555 MCU
+
+>[!CAUTION]
+> There is no way to backup or reflash the original firmware.  
+> Once you install QMK, this is it. You can only reflash QMK, or any other firmware. Just not the original.  
+
+>[!WARNING] 
+> Bluetooth and LED matrix is not working (yet).  
+
+#### a. About the hardware
+
+All CH555 keyboards seems using this same hardware configuration:  
+- P0_0->P0_7,P3_2->P3_7,P7_0->P7_1: column pins for scan matrix / common anode pins for LED matrix.  
+- PORT 4: row pins for scan matrix / cathode pins for LED matrix - RED color.  
+- PORT 2: cathode pins for LED matrix - GREEN color.  
+- PORT 1: cathode pins for LED matrix - BLUE color.  
+
+- PIN P3_0 & P3_1: UART0 - connect to BLE module.  
+Specific cordinate for each key depends on the keyboards. You can totaly just flash the firmware of kw75s, then make some guesses. A multimeter might not even needed.  
+
+#### b. About the software
+
+There are two bootloader in CH555:
+- The *factory* one, installed by the manufacturer of the MCU itself. This one have some built-in protection & securities, very hard to kill, so don't worry.  
+- The *OEM* one, installed by the keyboard PCB maker.  
+
+When the chip powers up:
+1. It enters the ***factory bootloader***.
+2. If P1_5 held to GND, it stays in factory bootloader mode, and appears as a USB Device with PID:VID is 0x4348:0x55E0. Then wait for flashing.  
+3. If not, it enters the ***OEM bootloader***.
+4. If P4_7 held to GND, it stays in OEM bootloader, appear as another PID:VID.   
+>[!NOTE] This bootloader uses **different** flashing protocol than the factory one.  
+5. If not, it enters the main code, and firmware runs normally.  
+
+As you might already guessed, to flash QMK, we'll just use the MCU's *factory bootloader* (and destroy the *OEM bootloader + OEM firmware* in the process).   
+>[!TIP] **For get into the factory bootloader**:  
+There should be 3 or 4 holes near the MCU.  
+> - Try sorting twos of those holes while connecting the USB cable.  
+> - At the same time, observe the VID:PID to find out which holes gives you the *factory bootloader*.   
+
+You can use the Flash tool from the Manufacturer of CH555 - [WCHISPStudio](https://www.wch.cn/downloads/WCHISPTool_Setup_exe.html) or various other open source tools on github.   
+Flashing the compiled QMK .bin (or .hex) file should be easy. So I don't mention it.   
+>[!IMPORTANT] Whatever Flash tool you use, remember to uncheck the option ***"Enable P7.1 as manual reset input pin."***   
+Since P7.1 belongs to scan matrix, you don't want the keyboard to randomly reset while typing.   
+
+#### c. Memory usage
+
+As I tested, QMK consumes about **3kB xRAM** & **50kB Flash** on CH555. Almost **3 times** the usage comparing to AVR.  
+The ancient 8051 clearly don't like modern C code. Combines with sdcc and no LTO. We have a big ass room for optimization here.  
+
+>[!TIP] 
+> You can try this [sdcc_MCS51_rm](https://github.com/vuhuycan/sdcc_MCS51_rm), an attempt for dead code optimization with sdcc 8051.
+> It can bring memory size down to **2kB xRAM** & **30kB Flash** on CH555. 
+> To do that, run `./lto.sh`  before running `./compile.sh`.  
+
+
+#### d. Performance
+
+For normal typing, I don't see any delay. Not testing anything, but with F_CPU=12MHz, no console, I guess respond time is probably less than 20ms at worse.

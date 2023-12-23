@@ -25,3 +25,6 @@
 	path = lib/lvgl
 	url = https://github.com/qmk/lvgl.git
 	branch = release/v8.2
+[submodule "util/sdcc_MCS51_rm"]
+	path = util/sdcc_MCS51_rm
+	url = https://github.com/vuhuycan/sdcc_MCS51_rm.git

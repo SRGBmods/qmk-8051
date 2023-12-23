@@ -307,7 +307,8 @@ static int8_t calc_inertia(int8_t direction, int8_t velocity) {
 
 void mousekey_task(void) {
     // report cursor and scroll movement independently
-    report_mouse_t tmpmr = mouse_report;
+    report_mouse_t tmpmr;
+    tmpmr = mouse_report;
 
     mouse_report.x = 0;
     mouse_report.y = 0;
@@ -627,7 +628,8 @@ void mousekey_send(void) {
 }
 
 void mousekey_clear(void) {
-    mouse_report          = (report_mouse_t){};
+    //mouse_report          = (report_mouse_t){};
+    memset(&mouse_report,0,sizeof(mouse_report));
     mousekey_repeat       = 0;
     mousekey_wheel_repeat = 0;
     mousekey_accel        = 0;
