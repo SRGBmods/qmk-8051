@@ -1,7 +1,11 @@
 
 # QMK for 8051
 
+<<<<<<< HEAD
 This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk)(which is a fork of the famous [QMK](https://github.com/qmk/qmk_firmware)). 
+=======
+This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk), which is a fork of the famous [QMK](https://github.com/qmk/qmk_firmware). 
+>>>>>>> 68d68e6ad191c742c2b6ba8fd12d9218b45fcf0d
 This project contains some small tweaks for supporting **8051** architech.  
 
 Why supporting these dinosaurs? Haven't they gone extinct in the wild already?  
