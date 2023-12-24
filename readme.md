@@ -1,7 +1,7 @@
 
 # QMK for 8051
 
-This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk), which is also a fork of the famous [QMK](https://github.com/qmk/qmk_firmware). 
+This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk)(which is a fork of the famous [QMK](https://github.com/qmk/qmk_firmware)). 
 This project contains some small tweaks for supporting **8051** architech.  
 
 Why supporting these dinosaurs? Haven't they gone extinct in the wild already?  
@@ -10,6 +10,10 @@ Kind of. But! I see a ton of cheap chinese keyboards still using 8051, with dead
 Currently, any keyboards using **CH555** (a variant of 8051) can use this code.  
 Because all CH555 keyboards I know have same 99% hardware/software. With some tiny edits from my test keyboard [Reccarz kw75s](/keyboards/reccarz/kw75s), you're good to go. 
 
+>[!CAUTION]
+> This project is **experimental**.  
+> Though it works fine for my case, you might brick your keyboard.  
+> I will not flash this software on my daily use keyboard.
 
 
 ## I. What works and what not
@@ -22,7 +26,10 @@ A lot of functions are untested, or not working (yet), I hope I can find a way t
 - [ ] MouseKey   : untested, should works.
 - [ ] Console    : not working, I'm using UART0 for debugging.  
 
-- [ ] SCAN matrix: might need optimization.   
+- [ ] CH555 USB stack: work OK enough. But dead simple.  
+I tweak the sample code from CH555's Manufacturer(WCH) a bit to make it work with QMK.  
+Definitely need some refactoring.
+- [ ] SCAN matrix: might need optimization.  
 QMK use pointer for accessing GPIO. However, 8051 requires direct access to SFR for that.  
 My work-around introduces some delay, but I'm not sure if it affects the scan time or not.  
 - [ ] LED matrix : untested, but 8051 is probably too slow for that.  
@@ -35,7 +42,6 @@ I recorded the whole MCU-BLE communication and definitely will cover bluetooth i
 I got a bunch of compiler *Warning* about `casting between pointer and literal`.  
 Also, CH555 don't have EEPROM, might need to do some simple wear leveling driver first.  
 - [ ] Vial       : not working, unfortunately. Got internal RAM overflow Error when link. Need to optimize the EEPROM driver first.
-- [ ] Display    : untested.  
 - [ ] A major hassle of sdcc is that it doesn't have `__attribute((weak))` like gcc.  
 So, if you write custom functions in your keymap.c, the ones end with `*_user`, you need to delete its corresponding definition in the QMK source code.   
 Similarly, if use custom matrix scan routine, or some other custom driver, you also need to delete its correspoinding definition in QMK.   
@@ -46,13 +52,15 @@ Similarly, if use custom matrix scan routine, or some other custom driver, you a
 
 Besides cloning this repo and run `qmk setup`,  you need [SDCC](https://sourceforge.net/projects/sdcc/files/) version **4.4.0** or above.  
 >[!NOTE]
-> Use `sdcc --version` to check. Don't try lowwer versions. There're bugs!
+> Use `sdcc --version` to check. Don't try lower versions. There're bugs!
 
 ### 2. Make your keymap
 
 The port definition of 8051 is not *A1, A2, B1, B2, B3,*... but *P0_1, P0_2,*...
 So, instead of:
 ```json
+    "bootloader": "caterina",
+    "processor": "atmega32u4",
     "matrix_pins": {
         "cols": ["C14", "C15", "A0", "A1", "A9", "H3"],
         "rows": ["B4", "B3", "A15", "A14"]
@@ -60,6 +68,8 @@ So, instead of:
 ```
 Use this:
 ```json
+    "bootloader": "ch55xbl",
+    "processor": "ch555",
     "matrix_pins": {
         "cols": ["PORT0_1", "PORT1_2", "PORT3_0", "PORT0_3"],
         "rows": ["PORT1_1", "PORT1_7", "PORT3_3"]
@@ -114,7 +124,7 @@ However, the bootloader of these MCU need some reverse engineering. Some links i
 
 >[!CAUTION]
 > There is no way to backup or reflash the original firmware.  
-> Once you install QMK, this is it. You can only reflash QMK, or any other firmware. Just not the original.  
+> Once you install QMK, this is it. You can reflash QMK, or any other firmware. Just not the original.  
 
 >[!WARNING] 
 > Bluetooth and LED matrix is not working (yet).  
@@ -148,7 +158,7 @@ When the chip powers up:
 
 As you might already guessed, to flash QMK, we'll just use the MCU's *factory bootloader* (and destroy the *OEM bootloader + OEM firmware* in the process).   
 >[!TIP]
-> **For get into the factory bootloader**:  
+> **How to get into the factory bootloader**  
 > There should be 3 or 4 holes near the MCU.  
 > - Try sorting twos of those holes while connecting the USB cable.  
 > - At the same time, observe the VID:PID to find out which holes gives you the *factory bootloader*.   
@@ -166,8 +176,8 @@ The ancient 8051 clearly don't like modern C code. Combines with sdcc and no LTO
 
 >[!TIP] 
 > You can try [sdcc_MCS51_rm](https://github.com/vuhuycan/sdcc_MCS51_rm), an attempt for dead code optimization with sdcc 8051.  
-> It can bring memory size down to **2kB xRAM** & **30kB Flash** on CH555. 
-> To do that, run `./lto.sh`  before running `./compile.sh`.  
+> It can bring memory consumption down to **2kB xRAM** & **30kB Flash** on CH555. 
+> To do that, run `./lto.sh <kb> <km>`  before running `./compile.sh <kb> <km>`.  
 
 
 #### d. Performance
@@ -176,17 +186,20 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 
 ---
 
-# Apdx.
+# For further development
+
+## How I ported QMK to SDCC/MCS51
+
+### Modify the source code
+
+### Modify the build system
 
 ## Possible problems during compile/link
 
-- Internal RAM overflow because of **"sloc"** variables.
-  QMK uses `--large-model`, which means variables are put in xRAM(max *64kB* theorically, but usually *< 8kB*). data exchange between xRAM and Registers can only be perform indirectly using the tiny DPTR register.  
-  xRAM is slow, but huge.  
-  In the other hand, data exchange between iRAM and Registers is more direct.  
-  It is faster. But, iRAM is tiny, only 256B. Even worse, only lowwer 128B of iRAM can be access directly by `mov Rx,Rx` instruction, the rest can only be access by `mov Rx,@Ri` instruction.  
-  So, when complex calculation is performed, especially when 16/32bit values are involved, 8 registers are not enough. SDCC will saves these values using **sloc** variables, located in iRAM for quickly accessing them.  
-  If you're using too many QMK features, you'll get link time Error like this:
+- Internal RAM overflow because of **"sloc"** variables.  
+  QMK uses `--large-model`, which means variables are put in xRAM. 
+  However, when complex calculation is performed, especially when 16/32bit values are involved, 8 registers are not enough. SDCC will saves these values using **sloc** variables, and put them in iRAM instead of xRAM, for quick accessing time.  
+  So, if you're using too many QMK features, you'll get link time Error like this:
   ```bash
   ?ASlink-Error-Could not get <num> consecutive bytes in internal RAM for area <AREA_NAME>.
   ```
@@ -202,7 +215,7 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
   QMK build system produces alot of duplicates `-I` and `-D` arguments. I tried removing the duplicated ones, it compiles.
   
 
-- For some unknow reason, when linking, I got this Error:  
+- For some unknow reason, sometimes, when linking, I got this Error:  
   ```bash
   ?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
   ```
@@ -211,16 +224,32 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
   So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:. 
 
 - Use struct/union as function return type break the returned variable's value. I think it's a compiler bug of v4.3.x, not sure about 4.4.0.  
-  Compiler bug, sound crazy. But, SDCC have just added support for using struct/union as function param/return type in recent version v4.3.0.  
-  I have encounter another similar bug at v4.3.0 but dissapeared in v4.3.6. Using struct/union as function param corrupts the passed variable's value.  
+  Or maybe some big struct/union are causing stack overflow.  
+  I have encounter another similar problem at v4.3.0 but dissapeared in v4.3.6. Using struct/union as function param corrupts the passed variable's value.  
 
 - SDCC does not support compound literal. `struct report_t report = {.a ={0}, .b ={0}};` is supported. But `struct report_t report = {struct report_t}{0};` is not.  
   It's strange, it's a standard C syntax, but SDCC does not support.
 
-- GCC specific features, not supported by SDCC, obviously. typeof, __attribute,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
-  Luckily, many other GCC syntax are supported by SDCC lately, like `#pragma once`, `__COUNTER__`, `__has_include_next`,...  
+- Many GCC specific features are not supported by SDCC, obviously. Like `typeof`, `__attribute`,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
+  Luckily, SDCC does add support for many other GCC syntax recently, like `#pragma once`, `__COUNTER__`, `__has_include_next`,...  
 
-## Mesozoic Era Memory model of MCS51
+# Some notes about MCS51's Memory model
+
+## A Mesozoic Era Memory model
+
+- MCS51 was developed in the 80s, when memory usage is just Bytes, kBytes of memories is just mind blowing big. As the result, MCS51 have two RAM area, one SFR area and one CODE area:  
+  CODE - use 16bit address.
+  xRAM - use 16bit address(max *64kB* theorically, but usually *< 8kB*). 
+  iRAM - use **8 bit** address(256Bytes). 
+  SFR  - use **8 bit** address. Though use the same address space as upper half 128B of iRAM, iRAM and SFR are not the same. They are completely different, physically separated. More on that later.  
+  Data exchange between iRAM and Registers can be direct or indirect.  
+  Data exchange between xRAM and Registers can only be perform indirectly though the tiny DPTR register.  
+  xRAM is slow, but big.  
+  iRAM is fast, but tiny.  
+  Even worse, only lowwer 128B of iRAM can be access directly/indirectly by `mov Rn,Rn` or `mov Rn,@Ri` instructions.  
+  At upper 128B of iRAM: 
+    - Indirect access gives you the iRAM normally.
+    - Direct access gives you the SFR, not the iRAM.
 
 | Memory Space  | Size                                 | Access method |Pointer size|              
 | -----------   | -----------                          |----------     |  --------- |      
@@ -228,17 +257,18 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 | __data/__idata| 128B-lower addr of idata <p> **these are physically same**   |mov  Rn,@Ri <p> mov Rn, Rn|  1B     |
 | __sfr         | 128B-upper of idata <p> **physically separated from idata**  |mov  Rn, Rn               | **none**|
 |               |                                      |               |            |  
-| __xdata       | 64kB of xdata                        |movx A ,@DPTR  |    2B      |
+| __xdata       | 64kB  address space                  |movx A ,@DPTR  |    2B      |
 | __pdata       | 256B-1stPage of xdata                |movx A ,@Ri    |    2B      |
 |               |                                      |               |            |  
 | __code        | 64kB of CODE                         |movc A, @DPTR  |    2B      |
 
-- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes.
-- small - medium - large - huge memory models affect variable access time from small-fastest to large/huge-slowest. [8015 Memory Spaces](https://github.com/contiki-os/contiki/wiki/8051-Memory-Spaces)
 
-- Stack size: in theory, 8051 has 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. So actual size is less than 200B. For QMK, it is only ~160B. 
-- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, thus, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions.
-  To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [8051 Evem More stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
+- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes.  
+Read more about mcs51 memory at [8051 Memory Spaces](https://github.com/contiki-os/contiki/wiki/8051-Memory-Spaces)
+
+- Stack size: stack of mcs51 is put in iRAM, thus in theory, we have max 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. Actual size is less than 200B. For QMK, it is only ~160B. 
+- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, as the result, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions.
+  To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [8051 Even More stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
 
 ## Hardware improvements on MCS51 modern variants
   
