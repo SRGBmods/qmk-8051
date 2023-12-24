@@ -9,8 +9,8 @@ This project contains some small tweaks for supporting **8051** architech.
 Why supporting these dinosaurs? Haven't they gone extinct in the wild already?  
 Kind of. But! I see a ton of cheap chinese keyboards still using 8051, with dead simple firmwares. This project can open a whole new world for them.  
 
-Currently, any keyboards using **CH555** (a variant of 8051) can use this code.  
-Because all CH555 keyboards I know have same 99% hardware/software. With some tiny edits from my test keyboard [Reccarz kw75s](/keyboards/reccarz/kw75s), you're good to go. 
+Currently, any keyboards using **HFD801KJC** (clone of CH555 - a variant of 8051) can use this code. Because all HFD801KJC keyboards I've seen so far have exactly same hardware/software, just differnt keymap.  
+With some tiny edits from my test keyboard [Reccarz kw75s](/keyboards/reccarz/kw75s), you're good to go. 
 
 >[!CAUTION]
 > This project is **experimental**.  
@@ -35,9 +35,9 @@ Definitely need some refactoring.
 QMK use pointer for accessing GPIO. However, 8051 requires direct access to SFR for that.  
 My work-around introduces some delay, but I'm not sure if it affects the scan time or not.  
 - [ ] LED matrix : untested, but 8051 is probably too slow for that.  
-For CH555 keyboards, they have built-in LED matrix hardware, I might write driver for it later.  
+For HFD801KJC keyboards, they have built-in LED matrix hardware, I might write driver for it later.  
 - [ ] Bluetooth  : untested.  
-All CH555 keyboards I know comes with HS6620B BLE module.  
+All HFD801KJC keyboards I know comes with HS6620B BLE module.  
 I recorded the whole MCU-BLE communication and definitely will cover bluetooth in the future.  
 
 - [ ] EEPROM     : transient EEPROM works, but might need some optimization.  
@@ -102,39 +102,45 @@ The result is a .hex and a .bin file at QMK directory. You can now use it for fl
 
 ## III. Supported Keyboards
 
-* **CH555**:
-    - [Reccarz kw75s](/keyboards/reccarz/kw75s)  
-      Any other keyboard using CH555, for example:  
-    - QK60 RGB  
-    - GMK67  
-    - James Donkey A3  
-    - Fuhlen H75s (not sure about this one)
-* Potentially, I've seen some keyboards with OLED screen, running **CH55x**, but not sure if it is CH555: 
-    - LangTu LK84  
-    - Monka 3075  
-      Either way, USB stack of CH55x should be similar enough.
+* **CH55x**:
+    - **HFD801KJC** (clone of CH555):
+        - [x] [Reccarz kw75s](/keyboards/reccarz/kw75s)  
+        - [x] :warning:**UNTESTED** And any other keyboard using CH555, known ones: QK60 RGB, GMK67, James Donkey A3
+    - Potentially, I've seen some keyboards with OLED screen, but not sure if it is clone of CH555 or CH55x: 
+        - [ ] LangTu LK84  
+        - [ ] Monka 3075  
+    Either way, USB stack of CH55x should be similar enough.
+    - **VS11K28A** (also clone of CH555), but I'm not sure about the Bootloader situation of this one:
+        - [ ] Some GMMK, Redragon, Womier, Akko keyboards.
+
+* **Sinowealth** MCUs and its innumberable variants/clones: **UNSUPPORTED**. 
+    - **SH68F90** (the original one), **BYK916**(its clone)  
+    - **BYK8xx,BYK9xx,**... (its variants).  
+  The bootloader of these MCUs is much easier to brick than CH555. Some links if you're still interested:
+        - [smk](https://github.com/carlossless/smk), A keyboard firmware for 8051-based devices.
+	    - [sinowealth-kb-tool](https://github.com/carlossless/sinowealth-kb-tool), A tool to read and write firmware on sinowealth 8051 MCU based keyboards (through the ISP bootloader).
+	    - [sinowealth-8051-dumper](https://github.com/gashtaan/sinowealth-8051-dumper), Flash memory dumper for 8051-based SinoWealth MCUs.
+	    - [bootloader reverse engineering attempt](https://github.com/jackhumbert/pinebook-pro-keyboard-updater/issues/23)
+
 >[!NOTE]
 > With only 1kB xRAM, QMK for **CH552** is just **not possible**, unfortunately.
 
-* **Sinowealth** chips and their innumberable clones, notably **BYK916, BYK816,**...  
-However, the bootloader of these MCU need some reverse engineering. Some links if you're interested:
-	- [sinowealth-kb-tool](https://github.com/carlossless/sinowealth-kb-tool)
-	- [sinowealth-8051-dumper](https://github.com/gashtaan/sinowealth-8051-dumper)
-	- [bootloader reverse engineering attempt](https://github.com/jackhumbert/pinebook-pro-keyboard-updater/issues/23)
+### 1. For keyboards using HFD801KJC MCU
 
-
-### 1. For keyboards using CH555 MCU
+>[!CAUTION]
+> This cannot be applied for **VS11K28A**, even though they're also CH555.
+> Because those keyboards uses different hardware configurations than **HFD801KJC**.
 
 >[!CAUTION]
 > There is no way to backup or reflash the original firmware.  
-> Once you install QMK, this is it. You can reflash QMK, or any other firmware. Just not the original.  
+> Once you install QMK, this is it. You can reflash QMK, or any other firmware. Just not the original.
 
 >[!WARNING] 
 > Bluetooth and LED matrix is not working (yet).  
 
 #### a. About the hardware
 
-All CH555 keyboards seems using this same hardware configuration:  
+All HFD801KJC keyboards seems using this same hardware configuration:  
 - P0_0->P0_7, P3_2->P3_7, P7_0->P7_1: column pins for scan matrix / common anode pins for LED matrix.  
 - PORT4: row pins for scan matrix / cathode pins for LED matrix - RED color.  
 - PORT2: cathode pins for LED matrix - GREEN color.  
@@ -146,7 +152,7 @@ Specific cordinate for each key depends on the keyboards. You can totaly just fl
 
 #### b. About the software
 
-There are **two bootloader** in CH555:
+There are **two bootloader** in HFD801KJC:
 - The **factory bootloader**, installed by the manufacturer of the MCU itself. This one have some built-in protection & securities, very hard to kill, so don't worry.  
 - The **OEM bootloader**, installed by the keyboard PCB maker.  
 
@@ -217,14 +223,20 @@ Basically, just some lower level drivers for mcs51 + ch555, some tweak here and 
 - [drivers](/drivers/) <- contain other peripheral drivers, like eeprom, wear-leveling, lcd, led, bluetooth,...
 
 ### Modify the build system
+
 - [data/](/data/) <- help convert `info.json` to C sources and headers during build.
 - [builddefs/](/builddefs/) 
-    - [build_keyboard.mk](/builddefs/build_keyboard.mk) <- this is called first when build. It includes other .mk files, call scripts in `data/`
+    - [build_keyboard.mk](/builddefs/build_keyboard.mk) <- this is called first when build. It includes other .mk files, call scripts in `data/`. **MODIFIED** to add CH555
     - [build_features.mk](/builddefs/build_features.mk)
-    - [common_rules.mk](/builddefs/common_rules.mk)   <- contain main build rules, actual compile, link commands
-- [platforms/mcs51/platform.mk](/platforms/mcs51/platform.mk)      <- includes source files for MCS51 architech **NEW** 
-- [tmk_core/protocol/ch555/ch555.mk](/tmk_core/protocol/ch555/ch555.mk) <- includes source files for CH555 device    **NEW** 
+    - [common_rules.mk](/builddefs/common_rules.mk)   <- contain main build rules, actual compile, link commands. **MODIFIED** for supporting SDCC. The main reason I cannot make it works for SDCC is because the extension name of SDCC object file is `.rel` instead of `.o` like GCC.
+- [platforms/mcs51/platform.mk](/platforms/mcs51/platform.mk)      <- includes source files for MCS51 architech. **NEW** 
+- [tmk_core/protocol/ch555/ch555.mk](/tmk_core/protocol/ch555/ch555.mk) <- includes source files for CH555 device. **NEW** 
 
+When you run `qmk compile`, the execution procedure looks something like this:
+1. `build_keyboard.mk` run first.
+2. It then call `build_features.mk` and scripts in `data` to convert your keymap & config to C sources and headers in `.build/obj_<kb>_<km>/src/`.
+3. It then includes `.mk` for finding C sources & headers for correct drivers, platforms and usb protocol.
+4. Compile & link.
 
 ## Possible problems during compile/link
 
