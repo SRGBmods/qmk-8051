@@ -284,19 +284,23 @@ When you run `qmk compile`, the execution procedure looks something like this:
 
 ## A Mesozoic Era Memory model
 
-- MCS51 was developed in the 80s, when memory usage is just Bytes, kBytes of memories is just mind blowing big. As the result, MCS51 have two RAM area, one SFR area and one CODE area:  
-  CODE - use 16bit address.
-  xRAM - use 16bit address(max *64kB* theorically, but usually *< 8kB*). 
-  iRAM - use **8 bit** address(256Bytes). 
-  SFR  - use **8 bit** address. Though use the same address space as upper half 128B of iRAM, iRAM and SFR are not the same. They are completely different, physically separated. More on that later.  
+- MCS51 was developed in the 80s, when memory usage was counted by just Bytes, kBytes of memories was mind blowing big. So iRAM is equivalent to RAM nowadays. xRAM is treated more like EEPROM or Flash, rather than actual RAM.  
+  As the result, MCS51 have a complicated memory system; with two RAM areas, one SFR area and one CODE area:  
+  - CODE - use 16bit address, store machine codes.  
+  - xRAM - use 16bit address(max *64kB* theorically, but usually *< 8kB*), store variables.  
+  - iRAM - use **8 bit** address(256Bytes), store registers, variables, stack.  
+  - SFRs - use **8 bit** address, store system control & peripheral registers.  
+    Athough SFRs use the same address space as upper half 128B of iRAM, iRAM and SFRs are not the same. They are completely different, physically separated. More on that later.
+  
   Data exchange between iRAM and Registers can be direct or indirect.  
   Data exchange between xRAM and Registers can only be perform indirectly though the tiny DPTR register.  
-  xRAM is slow, but big.  
-  iRAM is fast, but tiny.  
+  - xRAM is slow, but big.  
+  - iRAM is fast, but tiny.
+    
   Even worse, only lowwer 128B of iRAM can be access directly/indirectly by `mov Rn,Rn` or `mov Rn,@Ri` instructions.  
   At upper 128B of iRAM: 
-    - Indirect access gives you the iRAM normally.
-    - Direct access gives you the SFR, not the iRAM.
+  - Indirect access gives you the iRAM normally.  
+  - Direct access gives you the SFR, not the iRAM.  
 
 | Memory Space  | Size                                 | Access method |Pointer size|              
 | -----------   | -----------                          |----------     |  --------- |      
