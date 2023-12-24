@@ -1,11 +1,9 @@
 
 # QMK for 8051
 
-<<<<<<< HEAD
+
 This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk)(which is a fork of the famous [QMK](https://github.com/qmk/qmk_firmware)). 
-=======
-This is a fork of [VIAL QMK](https://github.com/vial-kb/vial-qmk), which is a fork of the famous [QMK](https://github.com/qmk/qmk_firmware). 
->>>>>>> 68d68e6ad191c742c2b6ba8fd12d9218b45fcf0d
+
 This project contains some small tweaks for supporting **8051** architech.  
 
 Why supporting these dinosaurs? Haven't they gone extinct in the wild already?  
@@ -16,24 +14,24 @@ Because all CH555 keyboards I know have same 99% hardware/software. With some ti
 
 >[!CAUTION]
 > This project is **experimental**.  
-> Though it works fine for my case, you might brick your keyboard.  
-> I will not flash this software on my daily use keyboard.
+> You might brick your keyboard. I'm not responsible for any damage you've done using this software.  
+> And I would not flash this QMK on my daily use keyboard.  
 
 
 ## I. What works and what not
 
 The translation from AVR/ARM to 8051, or more precisely, from **gcc** to **sdcc** compiler, is not without some serious hassle.
 A lot of functions are untested, or not working (yet), I hope I can find a way to solve over time.
-- [x] Common functions should works, I tested layers, CapWords and ConsumerKey.  
+- [X] Common functions should works, I tested layers, CapWords and ConsumerKey.  
 - [x] Encoder.  
 - [x] NKRO.  
-- [ ] MouseKey   : untested, should works.
-- [ ] Console    : not working, I'm using UART0 for debugging.  
+- [x] :warning:MouseKey   : untested, but compiled, should works.
+- [x] :warning:Console    : not working, I'm using UART0 for debugging.  
 
-- [ ] CH555 USB stack: work OK enough. But dead simple.  
+- [x] :warning:CH555 USB stack: work OK enough. But dead simple.  
 I tweak the sample code from CH555's Manufacturer(WCH) a bit to make it work with QMK.  
 Definitely need some refactoring.
-- [ ] SCAN matrix: might need optimization.  
+- [x] :warning:SCAN matrix: might need optimization.  
 QMK use pointer for accessing GPIO. However, 8051 requires direct access to SFR for that.  
 My work-around introduces some delay, but I'm not sure if it affects the scan time or not.  
 - [ ] LED matrix : untested, but 8051 is probably too slow for that.  
@@ -48,7 +46,8 @@ Also, CH555 don't have EEPROM, might need to do some simple wear leveling driver
 - [ ] Vial       : not working, unfortunately. Got internal RAM overflow Error when link. Need to optimize the EEPROM driver first.
 - [ ] A major hassle of sdcc is that it doesn't have `__attribute((weak))` like gcc.  
 So, if you write custom functions in your keymap.c, the ones end with `*_user`, you need to delete its corresponding definition in the QMK source code.   
-Similarly, if use custom matrix scan routine, or some other custom driver, you also need to delete its correspoinding definition in QMK.   
+Similarly, if use custom matrix scan routine, or some other custom driver, you also need to delete its correspoinding definition in QMK.
+- [ ] And various other untested QMK features.
 
 ## II. How to use
 
@@ -196,7 +195,36 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 
 ### Modify the source code
 
+Basically, just some lower level drivers for mcs51 + ch555, some tweak here and there for complying SDCC syntax, and voila. We have QMK for 8051.
+- [keyboards/](/keyboards/)   <- keymaps, configs for your keyboards lives here.
+- [quantum/](/quantum/)       <- QMK juicy features lives here. Most SDCC unsupported C/GCC syntax also lives here.
+- [tmk_core/protocol/](/tmk_core/protocol/)   <- USB stacks
+    - [usb_descriptor.c](/tmk_core/protocol/usb_descriptor.c) <- common usb descriptors for all stacks.
+    - [lufa/](/tmk_core/protocol/lufa/)    <- for AVRs
+    - [chibios/](/tmk_core/protocol/lufa/) <- for ARMs
+    - [ch555/](/tmk_core/protocol/ch555/)  <- for MCS51-CH555 - **NEW**  
+- [platforms/](/platforms/) <- other important lower level drivers
+    - [gpio.h](/platforms/gpio.h)
+    - [timer.h](/platforms/timer.h)
+    - [bootloader.h](/platforms/bootloader.h), [suspend.h](/platforms/suspend.h), [atomic_util.h](/platforms/atomic_util.h)
+    - [avr/](/platforms/avr/) <- contain `.c` implementation of above `headers`, for AVR.
+    - [chibios/](/platforms/chibios/) <- for ARM.
+    - [mcs51/](/platforms/mcs51/) <- for MCS51 - **NEW** 
+- [lib/](/lib/) <- contain submodules of specific architech/device.
+    - [lufa/](/lib/lufa/)
+    - [chibios/](/lib/chibios/)
+    - [ch555/](/lib/ch555/) <- for MCS51-CH555 - **NEW** 
+- [drivers](/drivers/) <- contain other peripheral drivers, like eeprom, wear-leveling, lcd, led, bluetooth,...
+
 ### Modify the build system
+- [data/](/data/) <- help convert `info.json` to C sources and headers during build.
+- [builddefs/](/builddefs/) 
+    - [build_keyboard.mk](/builddefs/build_keyboard.mk) <- this is called first when build. It includes other .mk files, call scripts in `data/`
+    - [build_features.mk](/builddefs/build_features.mk)
+    - [common_rules.mk](/builddefs/common_rules.mk)   <- contain main build rules, actual compile, link commands
+- [platforms/mcs51/platform.mk](/platforms/mcs51/platform.mk)      <- includes source files for MCS51 architech **NEW** 
+- [tmk_core/protocol/ch555/ch555.mk](/tmk_core/protocol/ch555/ch555.mk) <- includes source files for CH555 device    **NEW** 
+
 
 ## Possible problems during compile/link
 
@@ -207,19 +235,20 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
   ```bash
   ?ASlink-Error-Could not get <num> consecutive bytes in internal RAM for area <AREA_NAME>.
   ```
-  Now, what you can do is:
+  Now, what you can do is:  
       - dissable the functions using many **sloc** variables.  
       - Use `#pragma stackauto` or `__reentrant` to put variables to stack instead of iRAM/xRAM. But this might cause stack overflow.  
       - Optimize the source code.
   
-- SDCC cannot handle too long command line. When using many QMK features, you might get a Weird Error like this:
+- SDCC cannot handle too long command line.  
+  When using many QMK features, you might get a Weird Error like this:
   ```bash
   Compiling: .build/obj_reccarz_kw75s_vial/src/default_keyboard.c                                    sh: 1: in/../share/sdcc/include/mcs51: not found
   ```
   QMK build system produces alot of duplicates `-I` and `-D` arguments. I tried removing the duplicated ones, it compiles.
   
 
-- For some unknow reason, sometimes, when linking, I got this Error:  
+- For some unknow reason, sometimes, I got **BIT_BANK** related ***Error*** during link:  
   ```bash
   ?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
   ```
@@ -227,14 +256,16 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
   I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
   So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:. 
 
-- Use struct/union as function return type break the returned variable's value. I think it's a compiler bug of v4.3.x, not sure about 4.4.0.  
-  Or maybe some big struct/union are causing stack overflow.  
+- Use struct/union as function return type break the returned variable's value.  
+  I think it's a compiler bug of v4.3.x, not sure about 4.4.0. Or maybe some big struct/union are causing stack overflow.  
   I have encounter another similar problem at v4.3.0 but dissapeared in v4.3.6. Using struct/union as function param corrupts the passed variable's value.  
 
-- SDCC does not support compound literal. `struct report_t report = {.a ={0}, .b ={0}};` is supported. But `struct report_t report = {struct report_t}{0};` is not.  
+- SDCC does not support compound literal.  
+  `struct report_t report = {.a ={0}, .b ={0}};` is supported. But `struct report_t report = {struct report_t}{0};` is not.  
   It's strange, it's a standard C syntax, but SDCC does not support.
 
-- Many GCC specific features are not supported by SDCC, obviously. Like `typeof`, `__attribute`,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
+- Many GCC specific syntax are not supported by SDCC, obviously.  
+  For ex: `typeof`, `__attribute`,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
   Luckily, SDCC does add support for many other GCC syntax recently, like `#pragma once`, `__COUNTER__`, `__has_include_next`,...  
 
 # Some notes about MCS51's Memory model
@@ -257,8 +288,8 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 
 | Memory Space  | Size                                 | Access method |Pointer size|              
 | -----------   | -----------                          |----------     |  --------- |      
-| __idata       | 128B-upper addr of idata             |mov  Rn,@Ri    |    1B      |
 | __data/__idata| 128B-lower addr of idata <p> **these are physically same**   |mov  Rn,@Ri <p> mov Rn, Rn|  1B     |
+| __idata       | 128B-upper addr of idata             |mov  Rn,@Ri    |    1B      |
 | __sfr         | 128B-upper of idata <p> **physically separated from idata**  |mov  Rn, Rn               | **none**|
 |               |                                      |               |            |  
 | __xdata       | 64kB  address space                  |movx A ,@DPTR  |    2B      |
@@ -267,7 +298,8 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 | __code        | 64kB of CODE                         |movc A, @DPTR  |    2B      |
 
 
-- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes.  
+- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes.
+
 Read more about mcs51 memory at [8051 Memory Spaces](https://github.com/contiki-os/contiki/wiki/8051-Memory-Spaces)
 
 - Stack size: stack of mcs51 is put in iRAM, thus in theory, we have max 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. Actual size is less than 200B. For QMK, it is only ~160B. 
