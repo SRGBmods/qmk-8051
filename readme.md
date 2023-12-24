@@ -156,14 +156,14 @@ There are **two bootloader** in HFD801KJC:
 - The **factory bootloader**, installed by the manufacturer of the MCU itself. This one have some built-in protection & securities, very hard to kill, so don't worry.  
 - The **OEM bootloader**, installed by the keyboard PCB maker.  
 
-When the chip powers up:
-1. It enters the *factory bootloader*.
+On powers up reset (when you plugin the cable/battery):
+1. It enters the *factory bootloader* at address 0xF400.
 2. If ***P1_5*** held to GND, it stays in *factory bootloader* mode, and appears as a USB Device with *PID:VID* is *0x4348:0x55E0*. Then wait for flashing.  
-3. If not, it enters the *OEM bootloader*.
+3. If not, the MCU apply software reset, then start running from address 0x0000. From there, it jumps directly to the *OEM bootloader*.
 4. If ***P4_7*** held to GND, it stays in *OEM bootloader*, appear as another *PID:VID*.   
 >[!NOTE]
 > **OEM** bootloader uses **different** flashing protocol than the **factory** one.  
-5. If not, it enters the main code, and firmware runs normally.  
+5. If not, it jumps to main code, and the keyboard runs normally.  
 
 As you might already guessed, to flash QMK, we'll just use the MCU's *factory bootloader* (and destroy the *OEM bootloader + OEM firmware* in the process).   
 >[!TIP]
