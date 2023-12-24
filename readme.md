@@ -82,14 +82,7 @@ But that's alright, ignore it. I wrote a simple script for temporarily replace t
 ./compile.sh <your_keyboard> <your_keymap>
 ```
 The result is a .hex and a .bin file at QMK directory. You can now use it for flashing.
->[!NOTE]
-> For some unknow reason, when linking, I got this Error:  
-> ```bash
->?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
->```
-> I don't know why sdcc decides to preserve a byte for **BIT_BANK**, or what even BIT_BANK is. Anyone know about this BIT_BANK thing, please help me :face_with_spiral_eyes:.  
-> I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
-> So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:.  
+ 
 
 
 
@@ -188,22 +181,58 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 ## Possible problems during compile/link
 
 - Internal RAM overflow because of **"sloc"** variables.
+  QMK uses `--large-model`, which means variables are put in xRAM(max *64kB* theorically, but usually *< 8kB*). data exchange between xRAM and Registers can only be perform indirectly using the tiny DPTR register.  
+  xRAM is slow, but huge.  
+  In the other hand, data exchange between iRAM and Registers is more direct.  
+  It is faster. But, iRAM is tiny, only 256B. Even worse, only lowwer 128B of iRAM can be access directly by `mov Rx,Rx` instruction, the rest can only be access by `mov Rx,@Ri` instruction.  
+  So, when complex calculation is performed, especially when 16/32bit values are involved, 8 registers are not enough. SDCC will saves these values using **sloc** variables, located in iRAM for quickly accessing them.  
+  If you're using too many QMK features, you'll get link time Error like this:
+  ```bash
+  ?ASlink-Error-Could not get <num> consecutive bytes in internal RAM for area <AREA_NAME>.
+  ```
+  Now, what you can do is:
+      - dissable the functions using many **sloc** variables.  
+      - Use `#pragma stackauto` or `__reentrant` to put variables to stack instead of iRAM/xRAM. But this might cause stack overflow.  
+      - Optimize the source code.
+  
+- SDCC cannot handle too long command line. When using many QMK features, you might get a Weird Error like this:
+  ```bash
+  Compiling: .build/obj_reccarz_kw75s_vial/src/default_keyboard.c                                    sh: 1: in/../share/sdcc/include/mcs51: not found
+  ```
+  QMK build system produces alot of duplicates `-I` and `-D` arguments. I tried removing the duplicated ones, it compiles.
+  
 
-- SDCC cannot handle too long command line.
+- For some unknow reason, when linking, I got this Error:  
+ ```bash
+ ?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
+ ```
+ I don't know why sdcc decides to preserve a byte for **BIT_BANK**, or what even BIT_BANK is. Anyone know about this BIT_BANK thing, please help me :face_with_spiral_eyes:.  
+ I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
+ So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:. 
 
-- Use struct/union as function return type break the returned variable's value.
+- Use struct/union as function return type break the returned variable's value. I think it's a compiler bug of v4.3.x, not sure about 4.4.0.  
+  Compiler bug, sound crazy. But, SDCC have just added support for using struct/union as function param/return type in recent version v4.3.0.  
+  I have encounter another similar bug at v4.3.0 but dissapeared in v4.3.6. Using struct/union as function param corrupts the passed variable's value.  
 
-- SDCC does not support compound literal.
+- SDCC does not support compound literal. `struct report_t report = {.a ={0}, .b ={0}};` is supported. But `struct report_t report = {struct report_t}{0};` is not.  
+  It's strange, it's a standard C syntax, but SDCC does not support.
 
-- GCC features, most cumbersome ... 
+- GCC specific features, not supported by SDCC, obviously. typeof, __attribute,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
+  Luckily, many other GCC syntax are supported by SDCC lately, like `#pragma once`, `__COUNTER__`, `__has_include_next`,...  
 
 ## MCS51 Mesozoic Era Memory model
 
-- Stack size: in theory, 8051 has 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. So actual size is less than 200B. For QMK, it is only ~160B.
-- small - medium - large - huge memory models affect variable access time from small is fastest to large/huge is slowest.
+- small - medium - large - huge memory models affect variable access time from small-fastest to large/huge-slowest. [8015 Memory Spaces](https://github.com/contiki-os/contiki/wiki/8051-Memory-Spaces)
 
-- pointer location/destination can affect memory usage & performance. Pointer pointing to __idata is 1 byte, to __xdata/__code is 2 byes, to unknown region is 3 bytes.
+- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata is 1 byte, to __xdata/__code is 2 byes, to unknown region is 3 bytes.
 
-- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, thus, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions. To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily.
+- Stack size: in theory, 8051 has 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. So actual size is less than 200B. For QMK, it is only ~160B. 
+- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, thus, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions.
+  To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [More on stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
+
+## MCS51 modern variant improvements
   
-- Double DPTR, decrement DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck. Though SDCC does support double DPTR for DS390, an old 8051 variant, nobody uses it nowadays. Let's hope SDCC support double DPTR for MCS51 someday.
+- Dual DPTR, decrementing DPTR, auto increase DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck.
+  Though SDCC does support dual DPTR for DS390, an old 8051 variant, nobody uses it nowadays. Let's hope SDCC support this feature for MCS51 someday.
+
+- [8051 Code Banking](https://github.com/contiki-os/contiki/wiki/8051-Code-Banking) - another approach, alternative way to Dual DPTR.
