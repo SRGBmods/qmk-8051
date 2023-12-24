@@ -180,3 +180,30 @@ The ancient 8051 clearly don't like modern C code. Combines with sdcc and no LTO
 #### d. Performance
 
 For normal typing, I don't see any delay. Not tested anything yet, but with F_CPU=12MHz & no console. I guess respond time is probably less than 20ms at worse.
+
+---
+
+# Apdx.
+
+## Possible problems during compile/link
+
+- Internal RAM overflow because of **"sloc"** variables.
+
+- SDCC cannot handle too long command line.
+
+- Use struct/union as function return type break the returned variable's value.
+
+- SDCC does not support compound literal.
+
+- GCC features, most cumbersome ... 
+
+## MCS51 Mesozoic Era Memory model
+
+- Stack size: in theory, 8051 has 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. So actual size is less than 200B. For QMK, it is only ~160B.
+- small - medium - large - huge memory models affect variable access time from small is fastest to large/huge is slowest.
+
+- pointer location/destination can affect memory usage & performance. Pointer pointing to __idata is 1 byte, to __xdata/__code is 2 byes, to unknown region is 3 bytes.
+
+- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, thus, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions. To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily.
+  
+- Double DPTR, decrement DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck. Though SDCC does support double DPTR for DS390, an old 8051 variant, nobody uses it nowadays. Let's hope SDCC support double DPTR for MCS51 someday.
