@@ -143,7 +143,7 @@ When the chip powers up:
 3. If not, it enters the *OEM bootloader*.
 4. If ***P4_7*** held to GND, it stays in *OEM bootloader*, appear as another *PID:VID*.   
 >[!NOTE]
-> This bootloader uses **different** flashing protocol than the factory one.  
+> **OEM** bootloader uses **different** flashing protocol than the **factory** one.  
 5. If not, it enters the main code, and firmware runs normally.  
 
 As you might already guessed, to flash QMK, we'll just use the MCU's *factory bootloader* (and destroy the *OEM bootloader + OEM firmware* in the process).   
@@ -203,12 +203,12 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
   
 
 - For some unknow reason, when linking, I got this Error:  
- ```bash
- ?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
- ```
- I don't know why sdcc decides to preserve a byte for **BIT_BANK**, or what even BIT_BANK is. Anyone know about this BIT_BANK thing, please help me :face_with_spiral_eyes:.  
- I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
- So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:. 
+  ```bash
+  ?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
+  ```
+  I don't know why sdcc decides to preserve a byte for **BIT_BANK**, or what even BIT_BANK is. Anyone know about this BIT_BANK thing, please help me :face_with_spiral_eyes:.  
+  I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
+  So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:. 
 
 - Use struct/union as function return type break the returned variable's value. I think it's a compiler bug of v4.3.x, not sure about 4.4.0.  
   Compiler bug, sound crazy. But, SDCC have just added support for using struct/union as function param/return type in recent version v4.3.0.  
@@ -220,19 +220,30 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 - GCC specific features, not supported by SDCC, obviously. typeof, __attribute,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
   Luckily, many other GCC syntax are supported by SDCC lately, like `#pragma once`, `__COUNTER__`, `__has_include_next`,...  
 
-## MCS51 Mesozoic Era Memory model
+## Mesozoic Era Memory model of MCS51
 
+| Memory Space  | Size                                 | Access method |Pointer size|              
+| -----------   | -----------                          |----------     |  --------- |      
+| __idata       | 128B-upper addr of idata             |mov  Rn,@Ri    |    1B      |
+| __data/__idata| 128B-lower addr of idata <p> **these are physically same**   |mov  Rn,@Ri <p> mov Rn, Rn|  1B     |
+| __sfr         | 128B-upper of idata <p> **physically separated from idata**  |mov  Rn, Rn               | **none**|
+|               |                                      |               |            |  
+| __xdata       | 64kB of xdata                        |movx A ,@DPTR  |    2B      |
+| __pdata       | 256B-1stPage of xdata                |movx A ,@Ri    |    2B      |
+|               |                                      |               |            |  
+| __code        | 64kB of CODE                         |movc A, @DPTR  |    2B      |
+
+- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes.
 - small - medium - large - huge memory models affect variable access time from small-fastest to large/huge-slowest. [8015 Memory Spaces](https://github.com/contiki-os/contiki/wiki/8051-Memory-Spaces)
-
-- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata is 1 byte, to __xdata/__code is 2 byes, to unknown region is 3 bytes.
 
 - Stack size: in theory, 8051 has 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. So actual size is less than 200B. For QMK, it is only ~160B. 
 - Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, thus, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions.
-  To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [More on stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
+  To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [8051 Evem More stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
 
-## MCS51 modern variant improvements
+## Hardware improvements on MCS51 modern variants
   
 - Dual DPTR, decrementing DPTR, auto increase DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck.
   Though SDCC does support dual DPTR for DS390, an old 8051 variant, nobody uses it nowadays. Let's hope SDCC support this feature for MCS51 someday.
 
 - [8051 Code Banking](https://github.com/contiki-os/contiki/wiki/8051-Code-Banking) - another approach, alternative way to Dual DPTR.
+
