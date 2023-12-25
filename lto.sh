@@ -1,6 +1,6 @@
 #!/bin/bash -f
 
-kb=${1:-'reccarz_kw75s'}
+kb=${1:-'reccarz/kw75s'}
 kb=${kb//\//_}
 
 km=${2:-'default'}
@@ -12,9 +12,10 @@ km=${2:-'default'}
 #qmk generate-compilation-database 
 #qmk compile 
 
-#./util/sdcc_MCS51_rm/sdcc_MCS51_rm.py -d .build/obj_${kb}_${km}/ \
 
-../../sdccMCS51rm/sdcc_MCS51_rm.py -d .build/obj_${kb}_${km}/ \
+#../../sdccMCS51rm/sdcc_MCS51_rm.py -d .build/obj_${kb}_${km}/ \
+
+./util/sdcc_MCS51_rm/sdcc_MCS51_rm.py -d .build/obj_${kb}_${km}/ \
  -e USB_DeviceInterrupt Timer0_ISR send_mouse send_extra send_keyboard keyboard_leds generate_tick_event \
  has_mouse_report_changed \
  get_u16_str get_u8_str \
