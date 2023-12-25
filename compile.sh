@@ -1,8 +1,10 @@
 #!/bin/bash -f
 
-kb=${1:-'reccarz_kw75s'}
-km=${1:-'default'}
-#km=${1:-'vial'}
+kb=${1:-'reccarz/kw75s'}
+kb=${kb//\//_}
+
+km=${2:-'default'}
+#km=${2:-'vial'}
 
 
 

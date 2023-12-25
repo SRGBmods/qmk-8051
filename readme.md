@@ -14,39 +14,40 @@ With some tiny edits from my test keyboard [Reccarz kw75s](/keyboards/reccarz/kw
 
 >[!CAUTION]
 > This project is **experimental**.  
-> You might brick your keyboard. I'm not responsible for any damage you've done using this software.  
-> And I would not flash this QMK on my daily use keyboard.  
+> You might brick your keyboard. I'm not responsible for any damage you would do using this software.  
+> I don't recommend flashing this QMK on your daily use keyboard.  
 
 
 ## I. What works and what not
 
-The translation from AVR/ARM to 8051, or more precisely, from **gcc** to **sdcc** compiler, is not without some serious hassle.
+The translation from AVR/ARM to 8051, or more precisely, from **GCC** to **SDCC** compiler, is not without some serious hassle.
 A lot of functions are untested, or not working (yet), I hope I can find a way to solve over time.
 - [X] Common functions should works, I tested layers, CapWords and ConsumerKey.  
 - [x] Encoder.  
 - [x] NKRO.  
-- [x] :warning:MouseKey   : untested, but compiled, should works.
+- [x] MouseKey.   
 - [x] :warning:Console    : not working, I'm using UART0 for debugging.  
 
+- [ ] **Vial**                : not working, cannot even enumerate USB device. debuggin...
 - [x] :warning:CH555 USB stack: work OK enough. But dead simple.  
 I tweak the sample code from CH555's Manufacturer(WCH) a bit to make it work with QMK.  
 Definitely need some refactoring.
 - [x] :warning:SCAN matrix: might need optimization.  
-QMK use pointer for accessing GPIO. However, 8051 requires direct access to SFR for that.  
+QMK use pointer for accessing GPIO. However, for 8051, pointer cannot be used to access peripheral registers.  
 My work-around introduces some delay, but I'm not sure if it affects the scan time or not.  
 - [ ] LED matrix : untested, but 8051 is probably too slow for that.  
 For HFD801KJC keyboards, they have built-in LED matrix hardware, I might write driver for it later.  
 - [ ] Bluetooth  : untested.  
 All HFD801KJC keyboards I know comes with HS6620B BLE module.  
 I recorded the whole MCU-BLE communication and definitely will cover bluetooth in the future.  
-
 - [ ] EEPROM     : transient EEPROM works, but might need some optimization.  
-I got a bunch of compiler *Warning* about `casting between pointer and literal`.  
+I got a bunch of compiler ***warning 88:*** `cast of LITERAL value to 'generic' pointer`.   
 Also, CH555 don't have EEPROM, might need to do some simple wear leveling driver first.  
-- [ ] Vial       : not working, unfortunately. Got internal RAM overflow Error when link. Need to optimize the EEPROM driver first.
-- [ ] A major hassle of sdcc is that it doesn't have `__attribute((weak))` like gcc.  
+
+- [ ] One important feature of GCC that QMK uses frequently, but SDCC doesn't have is `__attribute((weak))`.  
 So, if you write custom functions in your keymap.c, the ones end with `*_user`, you need to delete its corresponding definition in the QMK source code.   
-Similarly, if use custom matrix scan routine, or some other custom driver, you also need to delete its correspoinding definition in QMK.
+Similarly, if use custom matrix scan routine, or some other custom driver, you also need to delete its correspoinding definition in QMK.   
+
 - [ ] And various other untested QMK features.
 
 ## II. How to use
@@ -105,17 +106,18 @@ The result is a .hex and a .bin file at QMK directory. You can now use it for fl
 * **CH55x**:
     - **HFD801KJC** (clone of CH555):
         - [x] [Reccarz kw75s](/keyboards/reccarz/kw75s)  
-        - [x] :warning:**UNTESTED** And any other keyboard using CH555, known ones: QK60 RGB, GMK67, James Donkey A3
-    - Potentially, I've seen some keyboards with OLED screen, but not sure if it is clone of CH555 or CH55x: 
+        - [x] :warning:**UNTESTED**, should works. Any other keyboard using HFD801KJC, known ones: QK60 RGB, GMK67, James Donkey A3
+    - Potentially, I've seen some keyboards with LCD screen, but not sure if it is clone of CH555 or another CH55x: 
         - [ ] LangTu LK84  
         - [ ] Monka 3075  
-    Either way, USB stack of CH55x should be similar enough.
+    Either way, USB stacks of CH55x family should be similar enough.
     - **VS11K28A** (also clone of CH555), but I'm not sure about the Bootloader situation of this one:
         - [ ] Some GMMK, Redragon, Womier, Akko keyboards.
 
-* **Sinowealth** MCUs and its innumberable variants/clones: **UNSUPPORTED**. 
-    - **SH68F90** (the original one), **BYK916**(its clone)  
-    - **BYK8xx,BYK9xx,**... (its variants).  
+* **SinoWealth** MCUs and its innumberable variants/clones: **UNSUPPORTED**. 
+    The number of keyboards using this MCU family is so many, I don't even bother naming them. If your keyboard not using QMK or CH555, ~90% chance it is SinoWealth.
+    - [ ] **SH68F90** (the original one), **BYK916**(its most common clone).  
+    - [ ] **BYK8xx,BYK9xx,**... (its variants).  
   The bootloader of these MCUs is much easier to brick than CH555. Some links if you're still interested:
         - [smk](https://github.com/carlossless/smk), A keyboard firmware for 8051-based devices.
 	    - [sinowealth-kb-tool](https://github.com/carlossless/sinowealth-kb-tool), A tool to read and write firmware on sinowealth 8051 MCU based keyboards (through the ISP bootloader).
@@ -129,7 +131,7 @@ The result is a .hex and a .bin file at QMK directory. You can now use it for fl
 
 >[!CAUTION]
 > This cannot be applied for **VS11K28A**, even though they're also CH555.
-> Because those keyboards uses different hardware configurations than **HFD801KJC**.
+> Because keyboards with VS11K28A uses different hardware configurations than **HFD801KJC**.
 
 >[!CAUTION]
 > There is no way to backup or reflash the original firmware.  
@@ -184,14 +186,14 @@ As I tested, QMK consumes about **3kB xRAM** & **50kB Flash** on CH555. Almost *
 The ancient 8051 clearly don't like modern C code. Combines with sdcc and no LTO. We have a big ass room for optimization here.  
 
 >[!TIP] 
-> You can try [sdcc_MCS51_rm](https://github.com/vuhuycan/sdcc_MCS51_rm), an attempt for dead code optimization with sdcc 8051.  
+> You can try [sdcc_MCS51_rm](https://github.com/vuhuycan/sdcc_MCS51_rm), a dead code optimization tool for 8051-sdcc.  
 > It can bring memory consumption down to **2kB xRAM** & **30kB Flash** on CH555. 
 > To do that, run `./lto.sh <kb> <km>`  before running `./compile.sh <kb> <km>`.  
 
 
 #### d. Performance
 
-For normal typing, I don't see any delay. Not tested anything yet, but with F_CPU=12MHz & no console. I guess respond time is probably less than 20ms at worse.
+For normal typing, I don't see any delay. Not tested anything yet, but with F_CPU=12MHz & no console, I guess respond time is probably less than 20ms at worse.
 
 ---
 
@@ -201,7 +203,7 @@ For normal typing, I don't see any delay. Not tested anything yet, but with F_CP
 
 ### Modify the source code
 
-Basically, just some lower level drivers for mcs51 + ch555, some tweak here and there for complying SDCC syntax, and voila. We have QMK for 8051.
+Basically, just wrote some lower level drivers for mcs51 + ch555, some tweak here and there for complying SDCC syntax, and voila. We have QMK for 8051, if not couting the half broken build system.
 - [keyboards/](/keyboards/)   <- keymaps, configs for your keyboards lives here.
 - [quantum/](/quantum/)       <- QMK juicy features lives here. Most SDCC unsupported C/GCC syntax also lives here.
 - [tmk_core/protocol/](/tmk_core/protocol/)   <- USB stacks
@@ -224,17 +226,17 @@ Basically, just some lower level drivers for mcs51 + ch555, some tweak here and 
 
 ### Modify the build system
 
-- [data/](/data/) <- help convert `info.json` to C sources and headers during build.
+- [data/](/data/) and [lib/python/qmk/](/lib/python/qmk/) <- convert `info.json` to C sources and headers before compile. **MODIFIED** to add CH555
 - [builddefs/](/builddefs/) 
-    - [build_keyboard.mk](/builddefs/build_keyboard.mk) <- this is called first when build. It includes other .mk files, call scripts in `data/`. **MODIFIED** to add CH555
-    - [build_features.mk](/builddefs/build_features.mk)
+    - [build_keyboard.mk](/builddefs/build_keyboard.mk) <- this is called first when build. It includes other .mk files.   
+    - [build_features.mk](/builddefs/build_features.mk) <- convert `rules.mk` to C sources and headers before compile.
     - [common_rules.mk](/builddefs/common_rules.mk)   <- contain main build rules, actual compile, link commands. **MODIFIED** for supporting SDCC. The main reason I cannot make it works for SDCC is because the extension name of SDCC object file is `.rel` instead of `.o` like GCC.
 - [platforms/mcs51/platform.mk](/platforms/mcs51/platform.mk)      <- includes source files for MCS51 architech. **NEW** 
 - [tmk_core/protocol/ch555/ch555.mk](/tmk_core/protocol/ch555/ch555.mk) <- includes source files for CH555 device. **NEW** 
 
 When you run `qmk compile`, the execution procedure looks something like this:
 1. `build_keyboard.mk` run first.
-2. It then call `build_features.mk` and scripts in `data` to convert your keymap & config to C sources and headers in `.build/obj_<kb>_<km>/src/`.
+2. It then call `build_features.mk` and scripts in `data + lib/python/qmk` to convert your keymap & config to C sources and headers in `.build/obj_<kb>_<km>/src/`.
 3. It then includes `.mk` for finding C sources & headers for correct drivers, platforms and usb protocol.
 4. Compile & link.
 
@@ -264,7 +266,7 @@ When you run `qmk compile`, the execution procedure looks something like this:
   ```bash
   ?ASlink-Error-Could not get 1 consecutive byte in internal RAM for area BIT_BANK.
   ```
-  I don't know why sdcc decides to preserve a byte for **BIT_BANK**, or what even BIT_BANK is. Anyone know about this BIT_BANK thing, please help me :face_with_spiral_eyes:.  
+  I don't know why SDCC decides to preserve a byte for **BIT_BANK**, or what even BIT_BANK is. Anyone know about this BIT_BANK thing, please help me :face_with_spiral_eyes:.  
   I know it got something to do with the CH555 USB's interrupt service routine. But don't see that byte used anywhere in the code.  
   So, my script above just removes the BIT_BANK byte in the USB interrupt assembly code, Re-assemble then Link. Haven't seen a problem so far :crossed_fingers:. 
 
@@ -288,9 +290,8 @@ When you run `qmk compile`, the execution procedure looks something like this:
   As the result, MCS51 have a complicated memory system; with two RAM areas, one SFR area and one CODE area:  
   - CODE - use 16bit address, store machine codes.  
   - xRAM - use 16bit address(max *64kB* theorically, but usually *< 8kB*), store variables.  
-  - iRAM - use **8 bit** address(256Bytes), store registers, variables, stack.  
+  - iRAM - use **8 bit** address(*256Bytes* in most MCUs nowadays), store registers, variables, stack.  
   - SFRs - use **8 bit** address, store system control & peripheral registers.  
-    Athough SFRs use the same address space as upper half 128B of iRAM, iRAM and SFRs are not the same. They are completely different, physically separated. More on that later.
   
   Data exchange between iRAM and Registers can be direct or indirect.  
   Data exchange between xRAM and Registers can only be perform indirectly though the tiny DPTR register.  
@@ -300,32 +301,36 @@ When you run `qmk compile`, the execution procedure looks something like this:
   Even worse, only lowwer 128B of iRAM can be access directly/indirectly by `mov Rn,Rn` or `mov Rn,@Ri` instructions.  
   At upper 128B of iRAM: 
   - Indirect access gives you the iRAM normally.  
-  - Direct access gives you the SFR, not the iRAM.  
+  - Direct access gives you the SFR, not the iRAM.   
+    Athough SFRs use the same address space as upper half 128B of iRAM, iRAM and SFRs are not the same. They are completely different, physically separated.    
+
+  QMK couldn't fit in iRAM for sure. Even if it does, there would be no place left for stack.   
+  So we are stuck with the shitty xRAM.
 
 | Memory Space  | Size                                 | Access method |Pointer size|              
 | -----------   | -----------                          |----------     |  --------- |      
-| __data/__idata| 128B-lower addr of idata <p> **these are physically same**   |mov  Rn,@Ri <p> mov Rn, Rn|  1B     |
-| __idata       | 128B-upper addr of idata             |mov  Rn,@Ri    |    1B      |
+| __data/__idata| 128B-lower addr of idata <p> **these are physically same**   |mov  Rn,@Ri <p> mov Rn, Rn|  1Bbyte     |
+| __idata       | 128B-upper addr of idata             |mov  Rn,@Ri    |    1Byte      |
 | __sfr         | 128B-upper of idata <p> **physically separated from idata**  |mov  Rn, Rn               | **none**|
 |               |                                      |               |            |  
-| __xdata       | 64kB  address space                  |movx A ,@DPTR  |    2B      |
-| __pdata       | 256B-1stPage of xdata                |movx A ,@Ri    |    2B      |
+| __xdata       | 64kB  max                            |movx A ,@DPTR  |    2Bytes      |
+| __pdata       | 256B-1stPage of xdata                |movx A ,@Ri    |    2Bytes      |
 |               |                                      |               |            |  
-| __code        | 64kB of CODE                         |movc A, @DPTR  |    2B      |
+| __code        | 64kB max                             |movc A, @DPTR  |    2Bytes      |
 
 
-- Pointer location/destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes.
+- Pointer destination can affect memory usage & performance. Pointer pointing to __idata/__data is 1 byte, to __xdata/__code is 2 byes, to unknown region (generic pointer) is 3 bytes. You probably want to specify the pointer destination for critical ones.
 
 Read more about mcs51 memory at [8051 Memory Spaces](https://github.com/contiki-os/contiki/wiki/8051-Memory-Spaces)
 
-- Stack size: stack of mcs51 is put in iRAM, thus in theory, we have max 256B for stack. But some of the lowwer 128B is used for Register Banks and several variables. Actual size is less than 200B. For QMK, it is only ~160B. 
-- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, as the result, local variable in sdcc 8051 behaves like static variable. This is a waste of precious memory for rarely used functions.
+- Stack size: stack of mcs51 is put in iRAM, thus in theory, we have max 256B for stack. But some of the lowwer 128B is used for Register Banks and other critical variables. Actual size is less than 200B. For QMK, it is only ~160B. 
+- Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, as the result, local variable in SDCC-mcs51 behaves like static variable. This is a waste of precious memory for rarely used functions.
   To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [8051 Even More stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
 
 ## Hardware improvements on MCS51 modern variants
   
-- Dual DPTR, decrementing DPTR, auto increase DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck.
+- Dual DPTR, decrementing DPTR, auto incrementing DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck.
   Though SDCC does support dual DPTR for DS390, an old 8051 variant, nobody uses it nowadays. Let's hope SDCC support this feature for MCS51 someday.
 
-- [8051 Code Banking](https://github.com/contiki-os/contiki/wiki/8051-Code-Banking) - another approach, alternative way to Dual DPTR.
+- [8051 Code Banking](https://github.com/contiki-os/contiki/wiki/8051-Code-Banking) - a method for expanding mcs51 Flash/xRAM address space above the 16bit limit.
 

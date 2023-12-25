@@ -21,6 +21,11 @@
 *.stackdump
 *.sym
 
+# sdcc Build artifacts
+*.ihx
+*.lk
+*.mem
+
 # QMK-specific
 api_data/v1
 quantum/version.h

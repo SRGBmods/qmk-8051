@@ -299,7 +299,9 @@ enum usb_endpoints {
 #define    RAW_OUT_EPNUM 4
 #endif
 
+#ifdef SHARED_EP_ENABLE
 #define    SHARED_IN_EPNUM 2
+#endif
 
 // TODO put console, midi and cdc endpoints to Device1 of ch555
 #ifdef CONSOLE_ENABLE
