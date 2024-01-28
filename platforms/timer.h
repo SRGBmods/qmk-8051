@@ -38,8 +38,8 @@ extern "C" {
 #ifndef __SDCC_mcs51
 extern volatile uint32_t timer_count;
 #else
-extern __data volatile uint32_t timer_count;
-//extern volatile uint32_t timer_count;
+//extern __data volatile uint32_t timer_count;
+extern volatile uint32_t timer_count;
 #endif
 
 void     timer_init(void);

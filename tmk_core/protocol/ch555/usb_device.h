@@ -126,7 +126,7 @@ extern void CH55X_Sleep_Deal( void );											/* Ch55x microcontroller sleep p
 
 #pragma save
 #pragma nooverlay
-extern void USB_DeviceInterrupt( void ) __interrupt(INT_NO_USB) __using(1);
+extern void USB_DeviceInterrupt( void ) __interrupt(INT_NO_USB);// __using(1);
 #pragma restore
 
 /***********************************************************************************************************************/

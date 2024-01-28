@@ -3,7 +3,7 @@
 kb=${1:-'reccarz/kw75s'}
 kb=${kb//\//_}
 
-km=${2:-'default'}
+ km=${2:-'default'}
 #km=${2:-'vial'}
 
 
@@ -17,8 +17,10 @@ km=${2:-'default'}
 echo "Check if BIT_BANK is used:"
 rg '\bbits\b' -t asm .build/obj_${kb}_${km} | rg -v ';|special function bits'
 ./util/del_bit_bank_area.py .build/obj_${kb}_${km}/protocol/ch555/usb_device.asm
+./util/del_bit_bank_area.py .build/obj_${kb}_${km}/lib/ch555/uart_hs6620b.asm
 
 # Assemble:
+echo -e "\\nAssembling..."
 asmlist=$(find .build/obj_${kb}_${km} -name "*asm" -type f) 
 for file in $asmlist
     do
@@ -27,6 +29,7 @@ for file in $asmlist
 done 
 
 # Link:
+echo -e "\\nLinking..."
 rellist=$(find .build/obj_${kb}_${km} -name "*rel" -type f) 
 sdcc --verbose -V \
  -mmcs51 --model-large --iram-size 0x0100 --xram-size 0x1f00 --xram-loc 0x0100 --code-size 0xf000 \
@@ -35,5 +38,6 @@ sdcc --verbose -V \
  -o ${kb}_${km}.ihx
 
 # Create .hex and .bin:
+echo -e "\\nCreate .hex and .bin files..."
 packihx ${kb}_${km}.ihx > ${kb}_${km}.hex
 objcopy -I ihex -O binary ${kb}_${km}.ihx ${kb}_${km}.bin

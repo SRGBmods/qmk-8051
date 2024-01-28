@@ -312,11 +312,14 @@ void raw_hid_send(uint8_t *data, uint8_t length) {
  * FIXME: Needs doc
  */
 #ifndef VIA_ENABLE
-void raw_hid_receive(uint8_t *data, uint8_t length) {
+#pragma save
+//#pragma stackauto
+void raw_hid_receive(__xdata uint8_t *data, uint8_t length) {
     // Users should #include "raw_hid.h" in their own code
     // and implement this function there. Leave this as weak linkage
     // so users can opt to not handle data coming in.
 }
+#pragma restore
 #endif
 
 /** \brief Raw HID Task
@@ -994,8 +997,10 @@ static void setup_mcu(void) {
     //CLK_config();
     CfgFsys();
     wait_ms(10); //wait for clock to settle
+    #ifndef NO_PRINT
     mInitSTDIO();
     println("init UART0 done");
+    #endif
 }
 
 /** \brief Setup USB
@@ -1096,6 +1101,12 @@ void protocol_pre_task(void) {
 }
 
 void protocol_post_task(void) {
+
+//#ifdef BLUETOOTH_ENABLE
+//    if (where_to_send() == OUTPUT_BLUETOOTH) {
+//        bluetooth_task();
+//    }
+//#endif
 #ifdef MIDI_ENABLE
     MIDI_Device_USBTask(&USB_MIDI_Interface);
 #endif

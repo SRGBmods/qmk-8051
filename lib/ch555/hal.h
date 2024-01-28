@@ -30,27 +30,38 @@
 
 #define	 FREQ_SYS	                     F_CPU	          //系统主频24MHz
 #define  OSC_EN_XT                       0                    //External crystal oscillator enable control
-#ifndef  UART0_BUAD
-#define  UART0_BUAD                      115200
-#define  UART1_BUAD                      57600
+#ifndef  UART0_BAUD
+#define  UART0_BAUD                      115200
+#endif
+#ifndef  UART1_BAUD
+#define  UART1_BAUD                      115200
 #endif
 #ifndef  DE_PRINTF                                            //Debug print
 #define  DE_PRINTF                      1
 #endif
+#define UART1_PRINTF
 
 #ifndef MIN
 #define MIN(a,b)                (((a) <= (b)) ? (a) : (b))
 #endif
 
 void CfgFsys(void);                                           //CH5555Ê±ÖÓÑ¡ÔñºÍÅäÖĂ
+
 void mDelayuS(UINT16 n);                                 //̉ÔuSÎªµ¥Î»ÑÓÊ±
 void mDelaymS(UINT16 n);                                 //̉ÔmSÎªµ¥Î»ÑÓÊ±
+
+#ifdef UART0_PRINTF
 void mInitSTDIO(void);                                        //T1×÷Îª²῭ØÂÊ·¢ÉúÆ÷
 void CH555UART0Alter(void);                                    //CH555´®¿Ú0̉ư½ÅÓ³Éäµ½P0.2/P0.3
-void CH555UART0SendByte(UINT8 SendDat);                    //CH555UART0·¢ËÍ̉»¸ö×Ö½Ú
-UINT8 CH555UART0RcvByte(void);                                //CH555UART0²éÑ¯·½Ê½½ÓÊỞ»¸ö×Ö½Ú
+//void CH555UART0SendByte(UINT8 SendDat);                    //CH555UART0·¢ËÍ̉»¸ö×Ö½Ú
+//UINT8 CH555UART0RcvByte(void);                                //CH555UART0²éÑ¯·½Ê½½ÓÊỞ»¸ö×Ö½Ú
 int putchar(int c);
-//int getchar(void);
+int getchar(void);
+#elif defined(UART1_PRINTF)
+void mInitSTDIO(void);                                        //T1×÷Îª²῭ØÂÊ·¢ÉúÆ÷
+int putchar(int c);
+int getchar(void);
+#endif
 
 void CH555WDTModeSelect(UINT8 mode);                       //CH555¿´ĂÅ¹·Ä£Ê½ÉèÖĂ 
 void CH555WDTFeed(UINT8 tim);                              //CH555¿´ĂÅ¹·Î¹¹·

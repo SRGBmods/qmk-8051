@@ -150,7 +150,7 @@ void USB_Device_Init( void )
 *******************************************************************************/ 
 #pragma save
 #pragma nooverlay
-void USB_DeviceInterrupt( void ) __interrupt(INT_NO_USB) __using(1)
+void USB_DeviceInterrupt( void ) __interrupt(INT_NO_USB) //__using(1)
 {
     UINT8  save = USB_IE;
     USB_IE = 0;
@@ -161,7 +161,7 @@ USB_DevIntNext:
 	us = USB_IF; 
 	if( us & bUX_IF_D0_TRANS )            
 	{
-		//printf("%x\n",SP);
+		//dprintf("%x\n",SP);
 		//dprint("d0tr");
 		/* D0 data transfer completed */
 		switch( D0_STATUS & ( bUXS_SETUP_ACT | MASK_UXS_TOKEN | MASK_UXS_ENDP ) )     

@@ -23,8 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // counter resolution 1ms
 // NOTE: union { uint32_t timer32; struct { uint16_t dummy; uint16_t timer16; }}
-__data volatile uint32_t timer_count;
-//volatile uint32_t timer_count;
+//__data volatile uint32_t timer_count;
+volatile uint32_t timer_count;
 
 /** \brief timer initialization
  *
@@ -67,7 +67,6 @@ inline void timer_clear(void) {
  * FIXME: needs doc
  */
 inline uint16_t timer_read(void) {
-    //__data uint32_t t;
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -82,7 +81,6 @@ inline uint16_t timer_read(void) {
  * FIXME: needs doc
  */
 inline uint32_t timer_read32(void) {
-    //__data uint32_t t;
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -97,7 +95,6 @@ inline uint32_t timer_read32(void) {
  * FIXME: needs doc
  */
 inline uint16_t timer_elapsed(uint16_t last) {
-    //__data uint32_t t;
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -112,7 +109,6 @@ inline uint16_t timer_elapsed(uint16_t last) {
  * FIXME: needs doc
  */
 inline uint32_t timer_elapsed32(uint32_t last) {
-    //__data uint32_t t;
     uint32_t t;
 
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {

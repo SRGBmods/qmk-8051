@@ -24,6 +24,7 @@ ifneq (,$(filter $(MCU),ch555))
   CODE_SIZE  = 0xf000
 
   F_CPU      = 12000000
+  F_CPU      = 24000000
  #F_USB = 48000000 
 
   PROTOCOL = CH555

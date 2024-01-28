@@ -138,6 +138,7 @@ void mDelaymS(UINT16 n)
 	}
 }                                         
 
+#ifdef UART0_PRINTF
 /*******************************************************************************
 * Function Name  : CH555UART0Alter
 * Description    : CH555 serial port 0 pin mapping, mapped to p0.2 and p0.3
@@ -173,7 +174,7 @@ void mInitSTDIO(void)
 	TCLK = 0;                                                                  //Uart0 send clock
 	
 	PCON |= SMOD;
-	x = 10 * FREQ_SYS / UART0_BUAD / 16;                                       //If you change the main frequency, be careful not to overflow the value of x                      
+	x = 10 * FREQ_SYS / UART0_BAUD / 16;                                       //If you change the main frequency, be careful not to overflow the value of x                      
 	x2 = x % 10;
 	x /= 10;
 	if(x2 >= 5) x++;                                                           //rounding
@@ -183,7 +184,7 @@ void mInitSTDIO(void)
 	TH1 = 0-x;                                                                 //12mhz crystal oscillator, buad/12 is the actual baud rate that needs to be set
 	TR1 = 1;                                                                   //Start timer 1
 	TI = 1;
-	//REN = 1;   TODO add getchar                                               //Serial port 0 receive enable
+	REN = 1;                                                                   //Serial port 0 receive enable
 }
 
 /*******************************************************************************
@@ -192,14 +193,8 @@ void mInitSTDIO(void)
 * Input          : None
 * Return         : SBUF
 *******************************************************************************/
-UINT8 CH555UART0RcvByte(void)
-{
-	while(RI == 0);                                                            //Query reception, interrupt mode is not required
-	RI = 0;
-	return SBUF;
-}
 int getchar(void) {
-	while (!RI);
+	while (!RI);//Query reception, interrupt mode is not required
 	RI = 0;
 	return (int)SBUF;
 }
@@ -210,18 +205,54 @@ int getchar(void) {
 * Input          : SendDat；data to send
 * Return         : None
 *******************************************************************************/
-void CH555UART0SendByte(UINT8 SendDat)
-{
-	SBUF = SendDat;                                                              //For query sending, the following two statements are not needed in the interrupt mode, but ti=0 is required before sending.
-	while(TI == 0);
-	TI = 0;
-}
 int putchar(int c) {
-	while (!TI);
+	while (!TI);//For query sending, the following two statements are not needed in the interrupt mode, but ti=0 is required before sending.
 	TI = 0;
 	SBUF = c & 0xff;
 	return c;
 }
+
+
+
+#elif defined(UART1_PRINTF)
+void CH555UART1Alter(void) {
+    P1_MOD_OC |= (3<<6);
+    P1_DIR_PU |= (3<<6);
+	PIN_FUNC |= bUART1_PIN_X;
+}
+void mInitSTDIO(void) {
+  SCON1 &= ~bU1SM0;
+  SCON1 |= bU1REN | bU1SMOD;
+
+  //SBAUD1 = 256 - F_CPU / 16 / UART1_BAUD;
+  //SBAUD1 = 0xf9;//for 115200 baud at 12MHz clk
+	UINT32 x;
+	UINT8 x2; 
+	x = 10 * FREQ_SYS / UART1_BAUD / 16;                                       //If you change the main frequency, be careful not to overflow the value of x                      
+	x2 = x % 10;
+	x /= 10;
+	if(x2 >= 5) x++;                                                           //rounding
+    SBAUD1 = 0 - x;
+
+  SIF1 = bU1TI | bU1RI; // clear interrupt flags
+  //IE_UART1 = 1;
+  //EA = 1;
+  CH555UART1Alter(); 
+}
+
+int getchar(void) {
+	while (!(SIF1&bU1RI));//Query reception, interrupt mode is not required
+	SIF1  = bU1RI;
+	return (int)SBUF1;
+}
+
+int putchar(int c) {
+	SBUF1 = c & 0xff;
+	while (!(SIF1&bU1TI));//For query sending, the following two statements are not needed in the interrupt mode, but ti=0 is required before sending.
+	SIF1  = bU1TI;
+	return c;
+}
+#endif
 
 /*******************************************************************************
 * Function Name  : CH555WDTModeSelect

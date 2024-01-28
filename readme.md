@@ -26,7 +26,7 @@ A lot of functions are untested, or not working (yet), I hope I can find a way t
 - [x] Encoder.  
 - [x] NKRO.  
 - [x] MouseKey.   
-- [x] :warning:Console    : not working, I'm using UART0 for debugging.  
+- [x] :warning:Console    : not working, I'm using UART for debugging.  
 
 - [ ] **Vial**                : not working, cannot even enumerate USB device. debuggin...
 - [x] :warning:CH555 USB stack: work OK enough. But dead simple.  
@@ -41,8 +41,8 @@ For HFD801KJC keyboards, they have built-in LED matrix hardware, I might write d
 All HFD801KJC keyboards I know comes with HS6620B BLE module.  
 I recorded the whole MCU-BLE communication and definitely will cover bluetooth in the future.  
 - [ ] EEPROM     : transient EEPROM works, but might need some optimization.  
-I got a bunch of compiler ***warning 88:*** `cast of LITERAL value to 'generic' pointer`.   
-Also, CH555 don't have EEPROM, might need to do some simple wear leveling driver first.  
+I got a bunch of compiler `warning 88: cast of LITERAL value to 'generic' pointer`.   
+Also, CH555 don't have EEPROM, might need to implement wear-leveling driver first.  
 
 - [ ] One important feature of GCC that QMK uses frequently, but SDCC doesn't have is `__attribute((weak))`.  
 So, if you write custom functions in your keymap.c, the ones end with `*_user`, you need to delete its corresponding definition in the QMK source code.   
@@ -55,8 +55,6 @@ Similarly, if use custom matrix scan routine, or some other custom driver, you a
 ### 1. Setup
 
 Besides cloning this repo and run `qmk setup`,  you need [SDCC](https://sourceforge.net/projects/sdcc/files/) version **4.4.0** or above.  
->[!NOTE]
-> Use `sdcc --version` to check. Don't try lower versions. There're bugs!
 
 ### 2. Make your keymap
 
@@ -107,10 +105,6 @@ The result is a .hex and a .bin file at QMK directory. You can now use it for fl
     - **HFD801KJC** (clone of CH555):
         - [x] [Reccarz kw75s](/keyboards/reccarz/kw75s)  
         - [x] :warning:**UNTESTED**, should works. Any other keyboard using HFD801KJC, known ones: QK60 RGB, GMK67, James Donkey A3
-    - Potentially, I've seen some keyboards with LCD screen, but not sure if it is clone of CH555 or another CH55x: 
-        - [ ] LangTu LK84  
-        - [ ] Monka 3075  
-    Either way, USB stacks of CH55x family should be similar enough.
     - **VS11K28A** (also clone of CH555), but I'm not sure about the Bootloader situation of this one:
         - [ ] Some GMMK, Redragon, Womier, Akko keyboards.
 
@@ -139,6 +133,8 @@ The result is a .hex and a .bin file at QMK directory. You can now use it for fl
 
 >[!WARNING] 
 > Bluetooth and LED matrix is not working (yet).  
+> There is one known bugs related to the USB stack of CH555:
+> - When restart computer, the keyboard fails to re-enumerate.
 
 #### a. About the hardware
 
@@ -245,12 +241,14 @@ When you run `qmk compile`, the execution procedure looks something like this:
 - Internal RAM overflow because of **"sloc"** variables.  
   QMK uses `--large-model`, which means variables are put in xRAM. 
   However, when complex calculation is performed, especially when 16/32bit values are involved, 8 registers are not enough. SDCC will saves these values using **sloc** variables, and put them in iRAM instead of xRAM, for quick accessing time.  
+  You can use this command `rg ';sloc' -t asm .build/obj_<kb>_<km>/` to check which functions using many **sloc** variables.
   So, if you're using too many QMK features, you'll get link time Error like this:
   ```bash
   ?ASlink-Error-Could not get <num> consecutive bytes in internal RAM for area <AREA_NAME>.
   ```
   Now, what you can do is:  
       - dissable the functions using many **sloc** variables.  
+      - Use `#pragma` `nogcse`, `noinvariant` or `noinduction` to disable coressponding optimization feature. **sloc** dissapear with the cost of performace.
       - Use `#pragma stackauto` or `__reentrant` to put variables to stack instead of iRAM/xRAM. But this might cause stack overflow.  
       - Optimize the source code.
   
@@ -282,9 +280,9 @@ When you run `qmk compile`, the execution procedure looks something like this:
   For ex: `typeof`, `__attribute`,... But most cumbersome is `switch` `case LOW ... HIGH:`, converting all of them to `if` `else` is time consuming.  
   Luckily, SDCC does add support for many other GCC syntax recently, like `#pragma once`, `__COUNTER__`, `__has_include_next`,...  
 
-# Some notes about MCS51's Memory model
+## Some notes about MCS51's Memory model
 
-## A Mesozoic Era Memory model
+### A Mesozoic Era Memory model
 
 - MCS51 was developed in the 80s, when memory usage was counted by just Bytes, kBytes of memories was mind blowing big. So iRAM is equivalent to RAM nowadays. xRAM is treated more like EEPROM or Flash, rather than actual RAM.  
   As the result, MCS51 have a complicated memory system; with two RAM areas, one SFR area and one CODE area:  
@@ -327,7 +325,7 @@ Read more about mcs51 memory at [8051 Memory Spaces](https://github.com/contiki-
 - Local variable behaves like static variable by default. Instead of putting local variable in stack like other architech, SDCC put it in .DATA segment, as the result, local variable in SDCC-mcs51 behaves like static variable. This is a waste of precious memory for rarely used functions.
   To put it in stack, we can use `#pragma stackauto` or `__reentrant`. But beware of putting big variables on the stack. It can causes stack overflow easily. [8051 Even More stack](https://github.com/contiki-os/contiki/wiki/8051-Even-More-Stack)
 
-## Hardware improvements on MCS51 modern variants
+### Hardware improvements on MCS51 modern variants
   
 - Dual DPTR, decrementing DPTR, auto incrementing DPTR. These features of modern day 8051 variants can greatly improve memory access, by releaving the DPTR bottleneck.
   Though SDCC does support dual DPTR for DS390, an old 8051 variant, nobody uses it nowadays. Let's hope SDCC support this feature for MCS51 someday.
