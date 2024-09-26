@@ -14,8 +14,10 @@ With some tiny edits from my test keyboard [Reccarz kw75s](/keyboards/reccarz/kw
 
 >[!CAUTION]
 > This project is **experimental**.  
-> You might brick your keyboard. I'm not responsible for any damage you would do using this software.  
-> I don't recommend flashing this QMK on your daily use keyboard.  
+> - You might brick your keyboard. I'm not responsible for any damage you would do using this software.
+> - The program is now pretty buggy. Sometimes it works fine for days.
+>   Sometimes it just hangs randomly, a Reset is needed for it to be working again.
+> So I don't recommend flashing this QMK on your daily use keyboard.  
 
 
 ## I. What works and what not
@@ -132,9 +134,9 @@ The result is a .hex and a .bin file at QMK directory. You can now use it for fl
 > Once you install QMK, this is it. You can reflash QMK, or any other firmware. Just not the original.
 
 >[!WARNING] 
-> Bluetooth and LED matrix is not working (yet).  
-> There is one known bugs related to the USB stack of CH555:
-> - When restart computer, the keyboard fails to re-enumerate.
+> - Bluetooth and LED matrix is not working.  
+> - The program is now pretty buggy. Sometimes it works fine for days.
+>   Sometimes it just hangs randomly, a Reset is needed for it to be working again.
 
 #### a. About the hardware
 
