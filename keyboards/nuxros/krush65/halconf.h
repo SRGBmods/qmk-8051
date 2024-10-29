@@ -1,8 +1,8 @@
-/* Copyright 2021 QMK
+/* Copyright 2022 JasonRen(biu)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation, either version 2 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -14,15 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "bootloader.h"
+#pragma once
+#include_next <halconf.h>
 
-void bootloader_jump(void) {
-    uint32_t *boot_magic = (uint32_t *)0x20004c00;
-    *boot_magic = 0xc220b134;
-    NVIC_SystemReset();
-    }
-void mcu_reset(void) {
-    NVIC_SystemReset();
-    }
-
-void enter_bootloader_mode_if_requested(void) {}
+#undef HAL_USE_PWM
+#define HAL_USE_PWM    TRUE

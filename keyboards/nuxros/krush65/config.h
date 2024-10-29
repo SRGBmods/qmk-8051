@@ -1,4 +1,4 @@
-/* Copyright 2021 MT
+/* Copyright 2022 JasonRen(biu)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,24 +13,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #pragma once
 
-//#define RGB_MATRIX_LED_COUNT 22
+#define RGBLIGHT_LAYERS_RETAIN_VAL
 
-//#define RGB_DISABLE_WHEN_USB_SUSPENDED
-
-//#define RGB_MATRIX_KEYPRESSES
-//#define RGB_MATRIX_FRAMEBUFFER_EFFECTS
-
-#    define RGBLIGHT_LAYERS
-#    define RGBLIGHT_LAYERS_OVERRIDE_RGB_OFF
-#    define RGBLIGHT_LAYERS_RETAIN_VAL
-
-#    define RGBLIGHT_DEFAULT_MODE RGBLIGHT_MODE_RAINBOW_MOOD
-
-#define WS2812_PWM_DRIVER PWMD4
-#define WS2812_PWM_CHANNEL 4
-#define WS2812_PWM_PAL_MODE 2
-#define WS2812_PWM_DMA_STREAM STM32_DMA1_STREAM7
-#define WS2812_PWM_DMA_CHANNEL 7
+#define WS2812_PWM_DRIVER PWMD3
+#define WS2812_PWM_CHANNEL 2
+#define WS2812_PWM_DMA_STREAM STM32_DMA1_STREAM3
+#define WS2812_PWM_DMA_CHANNEL 3
