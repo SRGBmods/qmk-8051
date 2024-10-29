@@ -15,7 +15,7 @@
  */
 #pragma once
 
-#define RGBLIGHT_LAYERS_RETAIN_VAL
+//#define RGBLIGHT_LAYERS_RETAIN_VAL
 
 #define WS2812_PWM_DRIVER PWMD3
 #define WS2812_PWM_CHANNEL 2
