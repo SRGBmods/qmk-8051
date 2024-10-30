@@ -1,11 +1,12 @@
-# krush65
+# krush65 r2 hotswap
 
 ![krush65](https://nuxroskb.store/cdn/shop/files/The_Krush65._Absolutely_blown_away_by_this_board_and_the_price_is_killer_for_this._Great_RGB_diffusion_nice_full_and_bright_sound_signature_and_sweet_looking._It_had_some_super_minor.jpg?v=1714382174)
 
-- Keyboard Maintainer: https://github.com/vuhuycan
 - Product page: [nuxroskb.store](https://nuxroskb.store/products/krush65)
 - Design: Nuxros
 - Manufacture: Kezewa
+- Version: r2 - hotswap
+- Keyboard Maintainer: https://github.com/vuhuycan
 
 
 ## PCB
