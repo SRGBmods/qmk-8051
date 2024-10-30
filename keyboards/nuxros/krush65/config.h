@@ -17,10 +17,16 @@
 
 //#define RGBLIGHT_LAYERS_RETAIN_VAL
 
-#define WS2812_PWM_DRIVER PWMD3
-#define WS2812_PWM_CHANNEL 2
-#define WS2812_PWM_DMA_STREAM STM32_DMA1_STREAM3
-#define WS2812_PWM_DMA_CHANNEL 3
+#define WS2812_PWM_DRIVER PWMD1
+#define WS2812_PWM_CHANNEL 1
+#define WS2812_PWM_DMA_STREAM STM32_DMA1_STREAM5
+#define WS2812_PWM_DMA_CHANNEL 5
+
+
+#define WS2812_TIMING	790	//The total length of a bit (TH+TL) in nanoseconds
+#define WS2812_T1H	545	    //The length of a "1" bit's high phase in nanoseconds
+#define WS2812_T0H	245	    //The length of a "0" bit's high phase in nanoseconds
+#define WS2812_TRST_US	80	//The length of the reset phase in microseconds
 
 
 
