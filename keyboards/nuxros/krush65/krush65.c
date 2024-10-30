@@ -15,6 +15,9 @@
  */
 
 #include "bootloader.h"
+#include "config.h"
+
+#ifdef CUSTOM_BL_VIBL
 
 #include <ch.h>
 
@@ -30,3 +33,16 @@ void mcu_reset(void) {
     BKP->DR10 = 0;
     NVIC_SystemReset();
 }
+
+#elif defined CUSTOM_BL_PLUMBL
+
+void bootloader_jump(void) {
+    uint32_t *boot_magic = (uint32_t *)0x20004c00;
+    *boot_magic = 0xc220b134;
+    NVIC_SystemReset();
+    }
+void mcu_reset(void) {
+    NVIC_SystemReset();
+    }
+
+#endif

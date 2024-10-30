@@ -1,9 +1,12 @@
 {
-    "keyboard_name": "Krush65",
+    "keyboard_name": "Krush65 r2_hs",
     "processor": "STM32F103",
     "bootloader": "stm32duino",
+    "build": {
+        "lto": true
+    },
     "usb": {
-        "pid": "0xAA0C",
+        "pid": "0xFE16",
         "device_version": "1.0.0"
     },
     "features": {
@@ -12,6 +15,14 @@
         "mousekey": true,
         "nkro": true,
         "rgblight": true
+    },
+    "tapping": {
+        "hold_on_other_key_press": true
+    },
+    "caps_word": {
+        "enabled": true,
+        "both_shifts_turns_on": true,
+        "invert_on_shift": true
     },
     "indicators": {
         "caps_lock": "B15"

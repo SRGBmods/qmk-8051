@@ -1,22 +1,39 @@
-# yr6095
+# krush65
 
-![yr6095](https://i.imgur.com/k2SVb94h.png)
-A 60% multi-layout keyboard (there are 95 keys in total) with 1 RGB in capslock key.
-This keyboard use 16mhz HSE and APM32F103CBT6(STM32F103CBT6) as MCU.
+![krush65](https://nuxroskb.store/cdn/shop/files/The_Krush65._Absolutely_blown_away_by_this_board_and_the_price_is_killer_for_this._Great_RGB_diffusion_nice_full_and_bright_sound_signature_and_sweet_looking._It_had_some_super_minor.jpg?v=1714382174)
 
-- Keyboard Maintainer: https://github.com/jiaxin96
-- Hardware Supported: yr6095
-- Hardware Availability: [TaoBao-5162](https://item.taobao.com/item.htm?id=678583896604)
+- Keyboard Maintainer: https://github.com/vuhuycan
+- Product page: [nuxroskb.store](https://nuxroskb.store/products/krush65)
+- Design: Nuxros
+- Manufacture: Kezewa
 
-Make example for this keyboard (after setting up your build environment):
 
-    make yandrstudio/yr6095:default
-
-See [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) then the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information.
+## PCB
+This keyboard use:
+- 16mhz HSE.
+- APM32F103CBT6(STM32F103CBT6) as MCU.
+- 22 TX1812 addressable RGB LED as underglow.
 
 ## Bootloader
 
+Kezewa use an UF2 type bootloader called `Plum Bootloader` (actually, an unpublished fork of it). 
+When enter, it present itself as a USB Disk. To program it, you just copy the firmware (any .uf2 file) into this disk, it would reset to your code after several seconds.
+It occupies the first 28kiB of flash (good lord kezewa! it's nearly as big as QMK). So the main code need to be put at 0x08007000.
+
 Enter the bootloader in 2 ways:
 
-- **Bootmagic reset**: Hold down the key at (0,0) in the matrix (usually the top left key which is Escape in this keyboard) and plug in the keyboard
+- **Bootmagic reset**: Hold down Escape and plug in the keyboard.
 - **Keycode in layout**: Press the key mapped to `QK_BOOT` if it is available.
+
+## Compile QMK
+
+1. Compile as normal:
+```
+qmk compile -kb nuxros/krush65 -km default
+```
+
+2. Convert .bin file to .uf2 using a script comes with [Plum Bootloader](https://github.com/HaiMianBao/PlumBL):
+At keyboards/nuxros/krush65:
+```
+./uf2conv.py ../../../.build/nuxros_krush65_default.hex -o ./krush65_default.uf2 -c -f 0xabcdf103
+```

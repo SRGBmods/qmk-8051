@@ -1,7 +1,7 @@
 {
-  "name": "Krush65 HS",
-  "vendorId": "0x45D4",
-  "productId": "0x0075",
+  "name": "Krush65 r2hs",
+  "vendorId": "0xCD08",
+  "productId": "0xFE16",
   "lighting": "qmk_rgblight",
   "matrix": { "rows": 5, "cols": 15 },
   "layouts": {
