@@ -1,0 +1,137 @@
+// Copyright 2020 QMK / MudkipMao
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include QMK_KEYBOARD_H
+#include "keymap.h"
+
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+    /*
+     *               ┌───┬───┬───┬───┬───┬───┐                             ┌───┬───┬───┬───┬───┬───┬───┐
+     *               │Esc│ Q │ W │ E │ R │ T │                             │ Y │ U │ I │ O │ P │ \ │<- │
+     *              ┌┴───┼───┼───┼───┼───┼───┤                             └┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴───┴┐
+     *              │Ctl │ A │ S │ D │ F │ G │                              │ H │ J │ K │ L │ ; │   '   │
+     *             ┌┴────┴┬──┴┬──┴┬──┴┬──┴┬──┴┐                           ┌─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┴┐
+     *             │Shift │ Z │ X │ C │ V │ B │                           │ - │ N │ M │ , │ . │ / │ Fn3  │
+     *             ├────┬─┴──┬┴──┬┴───┼───┴───┤                           ├───┴───┴─┬─┴─┬─┴───┴─┬─┴─────┬┘ 
+     *             │Fn2 │Win │   │Alt │Spc-Shf│                           │Bkspc-Fn1│Ent│       │M1 │M2 │
+     *             └────┴────┘   └────┴───────┘                           └─────────┴───┘       └───┴───┘
+     */
+    [0] = LAYOUT_default(
+		KC_ESC,       KC_Q, KC_W, KC_E, KC_R, KC_T,                    KC_Y, KC_U, KC_I, KC_O, KC_P,    KC_BSLS,     KC_DEL,
+		LCTL_T(KC_TAB), KC_A, KC_S, KC_D, KC_F, KC_G,                     KC_H, KC_J, KC_K, KC_L, KC_SCLN,     KC_QUOT, 
+		   KC_LSFT,       KC_Z, KC_X, KC_C, KC_V, KC_B,               KC_MINS, KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, MO(3), 
+		KC_LCTL, KC_LGUI,     KC_LALT, LSFT_T(KC_SPC),                LT(1,KC_BSPC), RCTL_T(KC_ENT),   JS_PD,   KC_BTN1, LT(2,KC_BTN2),
+		                                                                                        KC_NO, KC_NO, KC_NO),
+    [1] = LAYOUT_default(
+		KC_GRV,  KC_1,    KC_2,    KC_3,       KC_4,       KC_5,       KC_6,    KC_7,    KC_8,   KC_9,    KC_0,      KC_TRNS, KC_DEL, 
+        CW_TOGG, S(KC_3), KC_LBRC, KC_RBRC, S(KC_LBRC), S(KC_RBRC),       KC_LEFT, KC_DOWN, KC_UP, KC_RGHT, S(KC_SCLN),   KC_QUOT, 
+        KC_TRNS, S(KC_COMM), KC_EQL, S(KC_DOT), S(KC_8), S(KC_EQL),   S(KC_MINS), S(KC_9), S(KC_0), KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, 
+		KC_TRNS, KC_TRNS,            KC_TRNS,     KC_TRNS,            KC_TRNS,    KC_TRNS,          KC_UP,            KC_TRNS, KC_TRNS, 
+		                                                                                  KC_LEFT, KC_DOWN, KC_RGHT),
+    [2] = LAYOUT_default(
+        KC_TRNS, KC_F1,  KC_F2,   KC_F3,   KC_F4,   KC_F5,             KC_F6,   KC_F7,   KC_F8,  KC_F9,    KC_F10,  KC_F11,  KC_F12, 
+		KC_CAPS, KC_PSCR, KC_HOME, KC_PGUP, KC_PGDN, KC_END,              KC_LEFT, KC_DOWN, KC_UP,  KC_RGHT,  KC_TRNS, KC_TRNS,         
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,         KC_TRNS, KC_TRNS, KC_TRNS, KC_BTN5, KC_BTN4, KC_BTN3, KC_TRNS,
+		KC_TRNS, KC_TRNS,          KC_TRNS,      KC_TRNS,             KC_TRNS, TG(5),            KC_WH_U,            KC_TRNS, KC_TRNS, 
+		                                                                                KC_WH_L, KC_WH_D, KC_WH_R),
+    [3] = LAYOUT_default(
+        KC_TRNS, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,            KC_F6,   KC_F7,   KC_F8,  KC_F9,    KC_F10,  KC_F11,  KC_F12, 
+		KC_CAPS, KC_PSCR, KC_HOME, KC_PGUP, KC_PGDN, KC_END,              KC_HOME, KC_PGDN, KC_PGUP,  KC_END,  KC_F12,  KC_TRNS,         
+        KC_TRNS, RGB_MOD, RGB_HUI, RGB_SAI, RGB_VAI, RGB_SPI,         KC_SPAM, JS_TOGG, QK_BOOT, DT_UP  , DT_DOWN, DT_PRNT, KC_TRNS,
+		KC_TRNS, TG(4),            RGB_TOG,      KC_TRNS,             KC_TRNS, KC_TRNS,          KC_VOLU,            KC_TRNS, KC_TRNS, 
+		                                                                                KC_BRID, KC_VOLD, KC_BRIU),
+    [4] = LAYOUT_default(
+        JS_6, JS_4, JS_3, JS_5, JS_7, KC_TRNS,                         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, JS_0, JS_1, JS_2, KC_TRNS, KC_TRNS,                      KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, 
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+		KC_TRNS, KC_TRNS,          KC_TRNS,      KC_TRNS,             KC_TRNS, KC_TRNS,          JS_JS,            KC_TRNS, KC_TRNS, 
+		                                                                                  KC_NO, KC_NO, KC_NO),
+    [5] = LAYOUT_default(
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_7,    KC_8,    KC_9,             KC_7,    KC_8,    KC_9,    S(KC_8),    KC_SLASH, KC_TRNS, TG(5),
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_4,    KC_5,    KC_6,                KC_4,    KC_5,    KC_6,   S(KC_EQUAL), KC_MINUS,   KC_TRNS, 
+        KC_TRNS, KC_TRNS, KC_0,    KC_1,    KC_2,    KC_3,            KC_0,    KC_1,    KC_2,    KC_3,       KC_TRNS, KC_COMMA, KC_TRNS,
+		KC_TRNS, KC_TRNS,          KC_TRNS,      KC_TRNS,             KC_TRNS, KC_TRNS,          KC_NO,            KC_TRNS, KC_TRNS, 
+		                                                                                  KC_NO, KC_NO, KC_NO),
+
+};
+
+bool spam_key = false;
+uint32_t spam_timer = false;
+uint32_t spam_interval = 3000; // (1000ms == 1s)
+
+uint8_t cursorSpeed = JOYSTICK_MOUSE_SPEED;
+uint8_t inertiaGain = JOYSTICK_MOUSE_INERTIA_GAIN; 
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  switch (keycode) {
+  case KC_SPAM: // Toggle if we enable/disable spam key
+    if (record->event.pressed) {
+      spam_key ^= 1;
+      spam_timer = timer_read32();
+      //dprintf("spam key is %d\n",spam_key);
+    }
+    return false;
+  case JS_TOGG: // toggle if joystick behave as analog/digital key
+    if (record->event.pressed) {
+      joy_type ^= 1;
+    }
+    return false;
+  case JM_SPI:
+    if (record->event.pressed) {
+      cursorSpeed += 1;
+    }
+    return false;
+  case JM_SPD:
+    if (record->event.pressed) {
+      cursorSpeed -= 1;
+    }
+    return false;
+  case JM_IGI:
+    if (record->event.pressed) {
+      inertiaGain += 1;
+    }
+    return false;
+  case JM_IGD:
+    if (record->event.pressed) {
+      inertiaGain -= 1;
+    }
+    return false;
+  }
+  return true;
+}
+
+void matrix_scan_user(void) {
+  if (spam_key && timer_elapsed32(spam_timer) >= spam_interval) {
+     spam_timer = timer_read32();
+     //SEND_STRING(SS_TAP(X_ENTER));
+     tap_code(KC_DOWN);
+     //dprintf("taped it\n");
+  }
+}
+
+bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case LT(1, KC_SPC):
+            // Do not select the hold action when another key is pressed.
+            return false;
+        default:
+            // Immediately select the hold action when another key is pressed.
+            return true;
+    }
+}
+
+
+#ifdef JOYSTICK_ENABLE
+joystick_config_t joystick_axes[JOYSTICK_AXIS_COUNT] = {
+    JOYSTICK_AXIS_VIRTUAL, // x
+    JOYSTICK_AXIS_VIRTUAL  // y
+};
+#endif
+
+void keyboard_post_init_user(void) {
+  // Customise these values to desired behaviour
+  //debug_enable=true;
+  //debug_matrix=true;
+  //debug_keyboard=true;
+  //debug_mouse=true;
+}

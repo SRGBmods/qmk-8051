@@ -1,0 +1,20 @@
+#JOYSTICK_ENABLE = no
+#SRC += ./analog.c #turn this on if disable joystick
+
+VIA_ENABLE = yes
+VIAL_ENABLE = yes
+LTO_ENABLE = yes
+
+CONSOLE_ENABLE = no
+COMMAND_ENABLE = no
+
+SPACE_CADET_ENABLE = no
+GRAVE_ESC_ENABLE = no
+MAGIC_ENABLE = no
+QMK_SETTINGS = no
+
+#KEY_OVERRIDE_ENABLE = no
+#COMBO_ENABLE = no
+#TAP_DANCE_ENABLE = no
+
+#EEPROM_DRIVER = transient
