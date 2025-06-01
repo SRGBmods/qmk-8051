@@ -2,7 +2,7 @@
   "name": "Libra Mini - duplex",
   "vendorId": "0x4C4D",
   "productId": "0x4C23",
-  "lighting": "qmk_backlight",
+  "lighting": "qmk_rgblight",
   "matrix": { "rows": 9, "cols": 6 },
   "customKeycodes": [
     {

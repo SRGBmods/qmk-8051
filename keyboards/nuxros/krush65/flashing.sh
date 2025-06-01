@@ -11,6 +11,10 @@
 ## reset halt
 ## # [stm32f1x.cpu] halted due to debug-request, current mode: Thread
 ## # xPSR: 0x01000000 pc: 0x08000acc msp: 0x20002800
+## dump_image krush65_vial.openocd3.bin 0x08000000 0x1ffff
+## # dumped 131071 bytes in 2.100430s (60.939 KiB/s)
+## flash erase_sector 0 0 last
+## # erased sectors 0 through 127 on flash bank 0 in 0.011027s
 ## flash write_image erase /home/huy/vibl/bootloader/build/bootloader-krush65_hs.bin 0x08000000
 #or the original bootloader:
 ## flash write_image erase /mnt/vanhuy/mech_key/krush65/plumBL/org_bootloader.bin 0x08000000

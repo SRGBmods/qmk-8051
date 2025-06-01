@@ -17,7 +17,9 @@
         "rgblight": true
     },
     "tapping": {
-        "hold_on_other_key_press": true
+        "hold_on_other_key_press": true,
+        "hold_on_other_key_press_per_key": true,
+        "term_per_key": true
     },
     "caps_word": {
         "enabled": true,
@@ -29,6 +31,8 @@
     },
     "rgblight": {
         "led_count": 22,
+        "hue_steps": 17,
+        "sleep": true,
         "animations": {
             "breathing": true,
             "rainbow_mood": true,

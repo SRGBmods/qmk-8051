@@ -26,6 +26,9 @@
 #define WS2812_T0H	245	    //The length of a "0" bit's high phase in nanoseconds
 #define WS2812_TRST_US	80	//The length of the reset phase in microseconds
 
+#define RGBLIGHT_TIMEOUT 300000 // ms - 5mins
+
 
 // for correct QK_BOOT:
-#define CUSTOM_BL_PLUMBL
+//#define CUSTOM_BL_PLUMBL
+#define CUSTOM_BL_VIBL
